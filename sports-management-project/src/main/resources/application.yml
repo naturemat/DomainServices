@@ -1,0 +1,39 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: sports-management-system
+
+  datasource:
+    url: ${POSTGRES_JDBC_URL:jdbc:postgresql://localhost:5432/sports_db}
+    username: ${POSTGRES_USERNAME:sports_user}
+    password: ${POSTGRES_PASSWORD:sports_password}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/sports_metrics}
+      database: ${MONGODB_DATABASE:sports_metrics}
+      auto-index-creation: true
+
+logging:
+  level:
+    root: INFO
+    com.sports: DEBUG
+    org.hibernate.SQL: DEBUG
