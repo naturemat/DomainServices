@@ -5,9 +5,8 @@ import './ProfileCreate.css';
 
 const ProfileCreate = () => {
   const [name, setName] = useState('');
-  const [sportType, setSportType] = useState('gym');
-  const [duration, setDuration] = useState(60);
-  const [intensity, setIntensity] = useState('MEDIUM');
+  const [sportType, setSportType] = useState('GYM');
+  const [birthDate, setBirthDate] = useState('2000-01-01');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -19,16 +18,14 @@ const ProfileCreate = () => {
     setLoading(true);
 
     try {
-      await api.createSession({
+      await api.registerAthlete({
         name,
         sportType,
-        date: new Date().toISOString(),
-        duration,
-        intensity
+        birthDate
       });
       navigate('/dashboard');
     } catch (err) {
-      setError(err.message || 'Failed to create profile');
+      setError(err.message || 'Failed to create profile. Make sure backend is running.');
     } finally {
       setLoading(false);
     }
@@ -37,8 +34,8 @@ const ProfileCreate = () => {
   return (
     <div className="profile-create-container">
       <div className="profile-create-card">
-        <h1>Create Your Profile</h1>
-        <p className="subtitle">Start tracking your training journey</p>
+        <h1>Create Your Athlete Profile</h1>
+        <p className="subtitle">Register as an athlete to start tracking your training</p>
         
         {error && <div className="error-message">{error}</div>}
         
@@ -62,40 +59,30 @@ const ProfileCreate = () => {
               value={sportType}
               onChange={(e) => setSportType(e.target.value)}
             >
-              <option value="gym">Gym / Fitness</option>
-              <option value="football">Football</option>
+              <option value="GYM">Gym / Fitness</option>
+              <option value="FOOTBALL">Football</option>
             </select>
           </div>
 
           <div className="form-group">
-            <label htmlFor="duration">Training Duration (minutes)</label>
+            <label htmlFor="birthDate">Birth Date</label>
             <input
-              type="number"
-              id="duration"
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
-              min="1"
-              max="300"
+              type="date"
+              id="birthDate"
+              value={birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
+              required
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="intensity">Intensity</label>
-            <select
-              id="intensity"
-              value={intensity}
-              onChange={(e) => setIntensity(e.target.value)}
-            >
-              <option value="LOW">Low</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="HIGH">High</option>
-            </select>
-          </div>
-
           <button type="submit" disabled={loading}>
-            {loading ? 'Creating...' : 'Create Profile'}
+            {loading ? 'Registering...' : 'Register Athlete'}
           </button>
         </form>
+        
+        <div className="backend-note">
+          <p>Backend must be running at http://localhost:8080</p>
+        </div>
       </div>
     </div>
   );

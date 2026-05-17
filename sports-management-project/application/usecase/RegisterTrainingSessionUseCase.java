@@ -16,11 +16,14 @@ import domain.ports.out.TrainingSessionRepository;
 import domain.services.FatigueCalculationService;
 import domain.services.RecoverySuggestionService;
 import domain.services.RoutineRecommendationService;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import shared.exceptions.AthleteNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@Service
 public class RegisterTrainingSessionUseCase {
 
     private final AthleteRepository athleteRepository;
@@ -51,6 +54,7 @@ public class RegisterTrainingSessionUseCase {
         this.fatigueRules = fatigueRules;
     }
 
+    @Transactional
     public RegisterSessionResponse execute(RegisterSessionRequest request) {
         UUID athleteId = request.getAthleteId();
 

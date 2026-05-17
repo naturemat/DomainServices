@@ -51,4 +51,24 @@ public class PostgresTrainingSessionRepository implements TrainingSessionReposit
         query.setParameter("athleteId", athleteId);
         return mapper.toDomainSessionList(query.getResultList());
     }
+
+    @Override
+    public List<TrainingSession> findAll() {
+        TypedQuery<TrainingSessionEntity> query = entityManager.createQuery(
+            "SELECT s FROM TrainingSessionEntity s ORDER BY s.sessionDate DESC",
+            TrainingSessionEntity.class
+        );
+        return mapper.toDomainSessionList(query.getResultList());
+    }
+
+    @Override
+    public List<TrainingSession> findByAthleteNameContaining(String name) {
+        TypedQuery<TrainingSessionEntity> query = entityManager.createQuery(
+            "SELECT s FROM TrainingSessionEntity s JOIN AthleteEntity a ON s.athleteId = a.id " +
+            "WHERE LOWER(a.name) LIKE LOWER(:name) ORDER BY s.sessionDate DESC",
+            TrainingSessionEntity.class
+        );
+        query.setParameter("name", "%" + name + "%");
+        return mapper.toDomainSessionList(query.getResultList());
+    }
 }

@@ -1,5 +1,8 @@
 package domain.policies;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class FatigueRules {
     private final int recoveryWindowHours;
     private final int highFatigueThreshold;

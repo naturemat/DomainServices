@@ -36,6 +36,6 @@ public class RecoverySuggestionService {
         if (consecutiveLowDays >= 3 && currentFatigue == FatigueLevel.LOW) {
             return RecoverySuggestion.INCREASE_INTENSITY;
         }
-        return getSuggestion(currentFatigue, null);
+        return getSuggestion(currentFatigue, SportType.GYM);
     }
 }

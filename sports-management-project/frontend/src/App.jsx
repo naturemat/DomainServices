@@ -13,7 +13,7 @@ const Layout = ({ children }) => {
       <header className="app-header">
         <div className="header-brand">Sports Management</div>
         <nav className="header-nav">
-          <a href="/dashboard">Dashboards</a>
+          <a href="/">Dashboards</a>
         </nav>
         <div className="header-user">
           <button 
@@ -30,12 +30,21 @@ const Layout = ({ children }) => {
 };
 
 const DashboardRouter = () => {
+  const athlete = api.getStoredAthlete();
+  
+  if (!athlete || !athlete.athleteId) {
+    return <Navigate to="/" replace />;
+  }
+
+  const defaultRoute = athlete.sportType === 'GYM' ? '/gym' : '/football';
+  
   return (
     <Routes>
-      <Route path="/" element={<DashboardSelector />} />
+      <Route path="/" element={<Navigate to={defaultRoute} replace />} />
+      <Route path="/dashboard" element={<Navigate to={defaultRoute} replace />} />
       <Route path="/gym" element={<GymDashboard />} />
       <Route path="/football" element={<FootballDashboard />} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to={defaultRoute} replace />} />
     </Routes>
   );
 };

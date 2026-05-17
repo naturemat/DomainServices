@@ -8,9 +8,12 @@ import domain.ports.out.AthleteRepository;
 import domain.ports.out.FatigueMetricsRepository;
 import domain.ports.out.RoutineRepository;
 import domain.services.RoutineRecommendationService;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import shared.exceptions.AthleteNotFoundException;
 import java.util.UUID;
 
+@Service
 public class GenerateRoutineUseCase {
 
     private final AthleteRepository athleteRepository;
@@ -29,6 +32,7 @@ public class GenerateRoutineUseCase {
         this.routineRecommendationService = routineRecommendationService;
     }
 
+    @Transactional
     public RoutineResponse execute(UUID athleteId) {
         Athlete athlete = athleteRepository.findById(athleteId)
             .orElseThrow(() -> new AthleteNotFoundException("Athlete not found: " + athleteId));
@@ -42,6 +46,6 @@ public class GenerateRoutineUseCase {
 
         routineRepository.save(recommendedRoutine);
 
-        return RoutineResponse.fromDomain(recommendedRoutine);
+        return RoutineResponse.fromDomain(recommendedRoutine, athlete.getName());
     }
 }
