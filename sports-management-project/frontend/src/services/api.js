@@ -62,7 +62,7 @@ export const api = {
     
     let athleteId = getStoredAthleteId();
     const sportTypeEnum = sportType.toUpperCase();
-    const intensityEnum = intensity.toUpperCase();
+    const intensityEnum = intensity.toUpperCase().replace('LOW', 'LIGHT');
 
     if (sportTypeEnum !== 'GYM' && sportTypeEnum !== 'FOOTBALL') {
       throw new Error('Invalid sportType. Must be GYM or FOOTBALL');

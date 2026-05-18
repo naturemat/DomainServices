@@ -17,12 +17,12 @@ const DomainServiceFlow = ({ session, sportType }) => {
     return '0-14 points';
   };
 
-  const sportIcon = sportType === 'FOOTBALL' ? '⚽' : '🏋️';
+  const sportIcon = sportType === 'FOOTBALL' ? '[F]' : '[G]';
 
   return (
     <div className="domain-flow-container">
       <div className="flow-header">
-        <span className="sport-icon">{sportIcon}</span>
+        <span className="sport-icon">{sportType === 'FOOTBALL' ? 'Football' : 'Gym'}</span>
         <h3>How Your Training Result Was Calculated</h3>
       </div>
       
