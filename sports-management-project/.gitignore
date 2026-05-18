@@ -42,6 +42,10 @@ application-*.properties
 .kilocode/
 openspec/
 .agignore
+.agent/
+skills/
+workflows/
+
 
 # =============================================================================
 # OS Generated

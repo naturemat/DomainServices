@@ -9,4 +9,6 @@ public interface TrainingSessionRepository {
     List<TrainingSession> findRecentByAthleteId(UUID athleteId, LocalDateTime since);
     TrainingSession save(TrainingSession session);
     List<TrainingSession> findByAthleteId(UUID athleteId);
+    List<TrainingSession> findAll();
+    List<TrainingSession> findByAthleteNameContaining(String name);
 }

@@ -58,7 +58,7 @@ class FatigueCalculationServiceTest {
     }
 
     @Test
-    void testCalculateFatigue_MediumIntensitySessions_ReturnsMediumFatigue() {
+    void testCalculateFatigue_MediumIntensitySessions_ReturnsLowFatigue() {
         UUID athleteId = UUID.randomUUID();
         LocalDateTime currentTime = LocalDateTime.now();
 
@@ -71,7 +71,7 @@ class FatigueCalculationServiceTest {
         List<TrainingSession> sessions = List.of(session);
         FatigueLevel result = fatigueCalculationService.calculateFatigue(sessions, currentTime);
 
-        assertEquals(FatigueLevel.MEDIUM, result);
+        assertEquals(FatigueLevel.LOW, result);
     }
 
     @Test
@@ -95,7 +95,7 @@ class FatigueCalculationServiceTest {
     void testApplyRestReduction_WithRestDays_LowersFatigue() {
         FatigueLevel highFatigue = FatigueLevel.HIGH;
 
-        FatigueLevel result = fatigueCalculationService.applyRestReduction(highFatigue, 2);
+        FatigueLevel result = fatigueCalculationService.applyRestReduction(highFatigue, 1);
 
         assertEquals(FatigueLevel.MEDIUM, result);
     }

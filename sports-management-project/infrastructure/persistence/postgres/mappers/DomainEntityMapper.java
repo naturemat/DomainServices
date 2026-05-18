@@ -78,7 +78,7 @@ public class DomainEntityMapper {
             entity.getName(),
             entity.getDescription(),
             entity.getRecommendedDurationMinutes(),
-            mapIntensity(entity.getRecommendedIntensity()),
+            mapRoutineIntensity(entity.getRecommendedIntensity()),
             mapRecoverySuggestion(entity.getRecoverySuggestion()),
             entity.getCreatedAt()
         );
@@ -92,7 +92,7 @@ public class DomainEntityMapper {
         entity.setName(domain.getName());
         entity.setDescription(domain.getDescription());
         entity.setRecommendedDurationMinutes(domain.getRecommendedDurationMinutes());
-        entity.setRecommendedIntensity(mapIntensityToEnum(domain.getRecommendedIntensity()));
+        entity.setRecommendedIntensity(mapRoutineIntensityToEnum(domain.getRecommendedIntensity()));
         entity.setRecoverySuggestion(mapRecoverySuggestionToEnum(domain.getRecoverySuggestion()));
         entity.setCreatedAt(domain.getCreatedAt());
         return entity;
@@ -123,7 +123,7 @@ public class DomainEntityMapper {
         return Intensity.valueOf(enumValue.name());
     }
 
-    private RoutineEntity.IntensityEnum mapIntensityToEnum(Intensity intensity) {
+    private RoutineEntity.IntensityEnum mapRoutineIntensityToEnum(Intensity intensity) {
         if (intensity == null) return null;
         return RoutineEntity.IntensityEnum.valueOf(intensity.name());
     }

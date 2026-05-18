@@ -23,12 +23,12 @@ import javax.sql.DataSource;
 )
 public class DatabaseConfig {
 
-    @Autowired
-    private DataSource dataSource;
+    //@Autowired
+    //private DataSource dataSource;
 
     @Bean
     @Primary
-    @ConfigurationProperties("spring.datasource.postgres")
+    @ConfigurationProperties("spring.datasource")
     public DataSourceProperties postgresDataSourceProperties() {
         return new DataSourceProperties();
     }

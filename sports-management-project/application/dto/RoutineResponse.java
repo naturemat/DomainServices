@@ -8,6 +8,7 @@ import java.util.UUID;
 public class RoutineResponse {
     private UUID id;
     private UUID athleteId;
+    private String athleteName;
     private String name;
     private String description;
     private int recommendedDurationMinutes;
@@ -16,10 +17,11 @@ public class RoutineResponse {
 
     public RoutineResponse() {}
 
-    public static RoutineResponse fromDomain(Routine routine) {
+    public static RoutineResponse fromDomain(Routine routine, String athleteName) {
         RoutineResponse response = new RoutineResponse();
         response.id = routine.getId();
         response.athleteId = routine.getAthleteId();
+        response.athleteName = athleteName;
         response.name = routine.getName();
         response.description = routine.getDescription();
         response.recommendedDurationMinutes = routine.getRecommendedDurationMinutes();
@@ -34,6 +36,10 @@ public class RoutineResponse {
 
     public UUID getAthleteId() {
         return athleteId;
+    }
+
+    public String getAthleteName() {
+        return athleteName;
     }
 
     public String getName() {

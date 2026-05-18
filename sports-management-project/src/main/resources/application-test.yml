@@ -1,0 +1,28 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: sports-management-system
+
+  datasource:
+    url: jdbc:postgresql://ep-crimson-star-aq1h28eq.c-8.us-east-1.aws.neon.tech/neondb?sslmode=require
+    username: neondb_owner
+    password: npg_uCRK3kWFLHD1
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+  data:
+    mongodb:
+      uri: mongodb+srv://Grupo1:passGrupo1@trends.5fjep6r.mongodb.net/?appName=trends
+      database: sports_metrics
+
+logging:
+  level:
+    root: WARN
+    com.sports: INFO

@@ -1,9 +1,9 @@
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
 import ProfileCreate from './pages/ProfileCreate';
-import DashboardSelector from './components/DashboardSelector';
 import GymDashboard from './pages/GymDashboard';
 import FootballDashboard from './pages/FootballDashboard';
+import SessionCreate from './pages/SessionCreate';
 import { api } from './services/api';
 import './index.css';
 
@@ -13,11 +13,14 @@ const Layout = ({ children }) => {
       <header className="app-header">
         <div className="header-brand">Sports Management</div>
         <nav className="header-nav">
-          <a href="/dashboard">Dashboards</a>
+          <a href="/dashboard">Dashboard</a>
         </nav>
         <div className="header-user">
           <button 
-            onClick={() => { api.logout(); window.location.href = '/'; }} 
+            onClick={() => { 
+              api.logout(); 
+              window.location.href = '/'; 
+            }} 
             className="logout-btn"
           >
             Start Over
@@ -29,47 +32,61 @@ const Layout = ({ children }) => {
   );
 };
 
-const DashboardRouter = () => {
+function DashboardRouter() {
+  const athlete = api.getStoredAthlete();
+  
+  if (!athlete || !athlete.athleteId) {
+    return <Navigate to="/" replace />;
+  }
+
+  const defaultRoute = athlete.sportType === 'GYM' ? '/gym' : '/football';
+  
   return (
     <Routes>
-      <Route path="/" element={<DashboardSelector />} />
+      <Route path="/" element={<Navigate to={defaultRoute} replace />} />
+      <Route path="/dashboard" element={<Navigate to={defaultRoute} replace />} />
       <Route path="/gym" element={<GymDashboard />} />
       <Route path="/football" element={<FootballDashboard />} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/session/new" element={<SessionCreate />} />
+      <Route path="*" element={<Navigate to={defaultRoute} replace />} />
     </Routes>
   );
-};
+}
 
-const App = () => {
+function App() {
   const [hasProfile, setHasProfile] = useState(null);
 
   useEffect(() => {
-    const athlete = api.getStoredAthlete();
-    setHasProfile(!!athlete);
+    checkProfile();
   }, []);
 
+  const checkProfile = () => {
+    const athlete = api.getStoredAthlete();
+    setHasProfile(!!(athlete && athlete.athleteId));
+  };
+
   if (hasProfile === null) {
-    return <div>Loading...</div>;
+    return (
+      <div className="loading-screen">
+        <div className="loading-spinner"></div>
+        <div className="loading-text">Loading...</div>
+      </div>
+    );
   }
 
   return (
     <BrowserRouter>
-      <Routes>
-        {!hasProfile ? (
+      {hasProfile ? (
+        <Layout>
+          <DashboardRouter />
+        </Layout>
+      ) : (
+        <Routes>
           <Route path="*" element={<ProfileCreate />} />
-        ) : (
-          <Route
-            path="/dashboard/*"
-            element={
-              <Layout>
-                <DashboardRouter />
-              </Layout>
-            }
-          />
-        )}
-      </Routes>
+        </Routes>
+      )}
     </BrowserRouter>
   );
-};
+}
 
 export default App;
