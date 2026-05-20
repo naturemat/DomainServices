@@ -53,12 +53,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- MongoDB Driver (included in spring-boot-starter-data-mongodb but explicit for clarity) -->
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver-sync</artifactId>
-        </dependency>
-
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -152,10 +146,10 @@
                         </goals>
                         <configuration>
                             <sources>
-                                <source>${project.basedir}/domain</source>
-                                <source>${project.basedir}/application</source>
-                                <source>${project.basedir}/infrastructure</source>
-                                <source>${project.basedir}/shared</source>
+                                <source>${project.basedir}/src/main/java/com/sportsclub/training</source>
+                                <source>${project.basedir}/src/main/java/com/sportsclub/performance</source>
+                                <source>${project.basedir}/src/main/java/com/sportsclub/shared</source>
+                                <source>${project.basedir}/src/main/java/com/sportsclub/infrastructure</source>
                             </sources>
                         </configuration>
                     </execution>
