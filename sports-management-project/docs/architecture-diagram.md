@@ -1,5 +1,26 @@
 # Architecture Diagram - Hexagonal (Ports & Adapters)
 
+## Contexts Structure
+
+```
+com.sportsclub/
+├── training/
+│   └── domain/
+│       ├── model/
+│       │   ├── entity/      (Athlete, TrainingSession, Routine, SportProfile)
+│       │   ├── valueobject/ (SessionId, Intensity, SportType)
+│       │   └── enums/       (RecoverySuggestion)
+│       ├── service/         (FatigueCalculator, RoutineRecommender, RecoverySuggester)
+│       ├── policy/          (FatigueRules)
+│       └── port/out/        (AthleteRepository, TrainingSessionRepository, RoutineRepository)
+├── performance/
+│   └── domain/
+│       ├── model/entity/    (FatigueMetrics)
+│       └── port/out/        (FatigueMetricsRepository)
+└── shared/
+    └── domain/model/       (FatigueLevel)
+```
+
 ## Overview
 
 ```
@@ -13,37 +34,56 @@
 |  | - RegisterAthlete      |  |                                    |        |
 |  +------------------------+  +------------------------------------+        |
 +---------------------------------------------------------------------------+
-                                 |
-                                 v
+                                  |
+                                  v
 +---------------------------------------------------------------------------+
 |                              DOMAIN LAYER                                 |
-|  +------------------+  +-------------------+  +------------------------+  |
-|  |    ENTITIES      |  |  VALUE OBJECTS    |  |      ENUMS            |  |
-|  | - Athlete        |  | - FatigueLevel    |  | - RecoverySuggestion  |  |
-|  | - TrainingSession|  | - Intensity       |  +------------------------+  |
-|  | - Routine        |  | - SportType       |                              |
-|  | - SportProfile   |  | - SessionId       |                              |
-|  +------------------+  +-------------------+                              |
 |                                                                          |
-|  +------------------------+  +------------------+  +-----------------+   |
-|  |    DOMAIN SERVICES    |  |      PORTS      |  |    POLICIES     |   |
-|  | - FatigueCalculation  |  | (Outbound)     |  | - FatigueRules  |   |
-|  |   Service             |  | - AthleteRepo  |  +-----------------+   |
-|  | - RoutineRecommenda-  |  | - TrainingSession|                        |
-|  |   tionService         |  |   Repo          |                        |
-|  | - RecoverySuggestion  |  | - RoutineRepo  |                        |
-|  |   Service             |  | - FatigueMetrics|                        |
-|  +------------------------+  |   Repo         |                        |
-|                             +------------------+                        |
+|  ┌─────────────────────────────┐  ┌───────────────────────────────┐    |
+|  |    TRAINING CONTEXT          │  │    PERFORMANCE CONTEXT        │    |
+|  │  com.sportsclub.training    │  │  com.sportsclub.performance   │    |
+|  │                             │  │                               │    |
+|  │  ENTITIES:                  │  │  ENTITIES:                    │    |
+|  │  - Athlete (Agg Root)       │  │  - FatigueMetrics (Agg Root) │    |
+|  │  - TrainingSession (Agg Root)  │  │                               │    |
+|  │  - Routine (Agg Root)       │  │  PORTS:                       │    |
+|  │  - SportProfile             │  │  - FatigueMetricsRepository  │    |
+|  │                             │  │                               │    |
+|  │  VALUE OBJECTS:             │  │                               │    |
+|  │  - SessionId (VO)           │  │                               │    |
+|  │  - Intensity (VO)           │  │                               │    |
+|  │  - SportType (VO)           │  │                               │    |
+|  │                             │  │                               │    |
+|  │  ENUMS:                     │  │                               │    |
+|  │  - RecoverySuggestion       │  │                               │    |
+|  │                             │  │                               │    |
+|  │  DOMAIN SERVICES:           │  │                               │    |
+|  │  - FatigueCalculator       │  │                               │    |
+|  │  - RoutineRecommender      │  │                               │    |
+|  │  - RecoverySuggester        │  │                               │    |
+|  │                             │  │                               │    |
+|  │  POLICIES:                  │  │                               │    |
+|  │  - FatigueRules             │  │                               │    |
+|  │                             │  │                               │    |
+|  │  PORTS:                     │  │                               │    |
+|  │  - AthleteRepository       │  │                               │    |
+|  │  - TrainingSessionRepository│  │                               │    |
+|  │  - RoutineRepository        │  │                               │    |
+|  └─────────────────────────────┘  └───────────────────────────────┘    |
+|                                                                          |
+|  ┌─────────────────────────────────────────────────────────────────┐     |
+|  │                    SHARED (com.sportsclub.shared)               │     |
+|  │                      FatigueLevel (Enum)                        │     |
+|  └─────────────────────────────────────────────────────────────────┘     |
 +---------------------------------------------------------------------------+
-             ^                                         |
-             |                          ADAPTERS (INFRASTRUCTURE)
-     +-------+-------+                    +-----------+-----------+
-     |              |                    |                       |
-+---+---+   +------+------+         +----+----+           +----+---+
-| POSTGRESQL |   | MONGODB     |         | REST  |           |  CONFIG  |
-| Adapter    |   | Adapter     |         | Adapter|           |          |
-+------------+   +-------------+         +--------+           +----------+
+              ^                                         |
+              |                          ADAPTERS (INFRASTRUCTURE)
+      +-------+-------+                    +-----------+-----------+
+      |              |                    |                       |
+ +---+---+   +------+------+         +----+----+           +----+---+
+ | POSTGRESQL |   | MONGODB     |         | REST  |           |  CONFIG  |
+ | Adapter    |   | Adapter     |         | Adapter|           |          |
+ +------------+   +-------------+         +--------+           +----------+
 
 ```
 
@@ -51,9 +91,10 @@
 
 ### Domain Layer
 Contains pure business logic without framework dependencies:
-- **Entities**: Objects with identity (Athlete, TrainingSession, Routine)
-- **Value Objects**: Immutable objects without identity (FatigueLevel, Intensity, SportType)
-- **Domain Services**: Stateless business logic (FatigueCalculationService, RoutineRecommendationService, RecoverySuggestionService)
+- **Entities**: Objects with identity (Athlete, TrainingSession, Routine, SportProfile, FatigueMetrics)
+- **Value Objects**: Immutable objects without identity (SessionId, Intensity, SportType, FatigueLevel)
+- **Enums**: Fixed sets of values (RecoverySuggestion)
+- **Domain Services**: Stateless business logic (FatigueCalculator, RoutineRecommender, RecoverySuggester)
 - **Ports**: Interfaces that define contracts for infrastructure
 - **Policies**: Configurable business rules (FatigueRules)
 
@@ -97,53 +138,152 @@ Concrete implementations of ports:
 
 ## Core Business Domain - Deep Dive
 
-### Domain Model Overview
+### Bounded Contexts Structure
 
 ```
-┌─────────────────────┐     ┌─────────────────────┐
-│      ATHLETE        │     │  TRAINING SESSION   │
-│  (Aggregate Root)   │     │  (Aggregate Root)    │
-├─────────────────────┤     ├─────────────────────┤
-│ - id: UUID          │────▶│ - sessionId: VO     │
-│ - name: String      │     │ - athleteId: UUID   │
-│ - sportType: VO     │     │ - sessionDate       │
-│ - birthDate         │     │ - durationMinutes   │
-└─────────────────────┘     │ - intensity: VO     │
-                            │ - fatigueLevel: VO  │
-                            │ - recoverySugg: VO  │
-                            │ - routine: VO       │
-                            └─────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────┐
+│                        TRAINING CONTEXT                                    │
+│                        Package: com.sportsclub.training.domain             │
+│                                                                           │
+│  ┌──────────────┐     ┌──────────────┐     ┌──────────────┐             │
+│  │   ATHLETE    │     │  TRAINING    │     │   ROUTINE    │             │
+│  │ (Agg Root)   │     │  SESSION     │     │ (Agg Root)   │             │
+│  │              │     │ (Agg Root)   │     │              │             │
+│  │ identity:    │     │ identity:    │     │ identity:   │             │
+│  │ UUID id      │     │ SessionId    │     │ UUID id      │             │
+│  │              │     │ (UUID VO)    │     │              │             │
+│  └──────────────┘     └──────────────┘     └──────────────┘             │
+│         │                   │                                              │
+│         └───────────────────┼──────────────────────────────────┐          │
+│                             │                                  │          │
+│  ┌──────────────┐          │                            ┌──────────────┐  │
+│  │SPORT PROFILE │          │                            │   POLICY     │  │
+│  │              │          │                            │ FatigueRules │  │
+│  │ identity:    │          │                            │              │  │
+│  │ UUID id      │          │                            │ thresholds:  │  │
+│  └──────────────┘          │                            │ HIGH=30      │  │
+│                            │                            │ MEDIUM=15    │  │
+│                            │                            │ window=72h   │  │
+└────────────────────────────┼────────────────────────────┴──────────────┘  │
+                             │                                              │
+  ┌──────────────────────────┼──────────────────────────────────────────────┤
+  │                 │         │                                    │        │
+  │                 │         │                                    │        │
+  │                 ▼         │                                    ▼        │
+  │  ┌────────────────┐       │                       ┌────────────────┐   │
+  │  │DOMAIN SERVICES │       │                       │ VALUE OBJECTS  │   │
+  │  │                │       │                       │                │   │
+  │  │FatigueCalculator       │                       │ SessionId      │   │
+  │  │RoutineRecommender      │                       │ Intensity      │   │
+  │  │RecoverySuggester       │                       │ SportType      │   │
+  │  └────────────────┘       │                       └────────────────┘   │
+  │                           │                                              │
+  │  ┌────────────────┐       │                       ┌────────────────┐   │
+  │  │     PORTS      │       │                       │     ENUMS      │   │
+  │  │                │       │                       │                │   │
+  │  │AthleteRepository       │                       │RecoverySugges-│   │
+  │  │TrainingSessionRepo     │                       │tion           │   │
+  │  │RoutineRepository       │                       └────────────────┘   │
+  │  └────────────────┘       │                                              │
+  └───────────────────────────┼──────────────────────────────────────────────┘
+                               │
+┌──────────────────────────────┼──────────────────────────────────────────────┤
+│                        PERFORMANCE CONTEXT                                │
+│                        Package: com.sportsclub.performance.domain          │
+│                                                                          │
+│  ┌──────────────────┐      ┌──────────────────────┐                    │
+│  │  FATIGUE METRICS  │      │    PORTS             │                    │
+│  │  (Agg Root)       │      │                      │                    │
+│  │                   │      │ FatigueMetrics      │                    │
+│  │ identity:         │      │   Repository        │                    │
+│  │ UUID id           │      └──────────────────────┘                    │
+│  └──────────────────┘                                                     │
+└───────────────────────────────────────────────────────────────────────────┘
+                               │
+                               ▼
+┌───────────────────────────────────────────────────────────────────────────┐
+│                           SHARED                                          │
+│                    Package: com.sportsclub.shared.domain.model            │
+│                         FatigueLevel (Enum)                              │
+└───────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Entities (3)
+### Entities Summary
 
-| Entity | Responsibility |
-|--------|----------------|
-| **Athlete** | Person who trains - owns training sessions |
-| **TrainingSession** | Individual training event with calculated fatigue |
-| **FatigueMetrics** | Historical record of athlete's fatigue (MongoDB) |
+| Context | Entity | Type | Identity | Package Location |
+|---------|--------|------|----------|------------------|
+| Training | **Athlete** | Aggregate Root | `UUID id` | `training/domain/model/entity/Athlete.java` |
+| Training | **TrainingSession** | Aggregate Root | `SessionId sessionId` | `training/domain/model/entity/TrainingSession.java` |
+| Training | **Routine** | Aggregate Root | `UUID id` | `training/domain/model/entity/Routine.java` |
+| Training | **SportProfile** | Entity | `UUID id` | `training/domain/model/entity/SportProfile.java` |
+| Performance | **FatigueMetrics** | Aggregate Root | `UUID id` | `performance/domain/model/entity/FatigueMetrics.java` |
 
-### Value Objects (6)
+### Value Objects Summary
 
-| Value Object | Values |
-|--------------|--------|
-| **Intensity** | LIGHT(1x), MODERATE(2x), HIGH(3x), EXTREME(4x) |
-| **FatigueLevel** | LOW(0-14), MEDIUM(15-29), HIGH(30+) |
-| **SportType** | GYM, FOOTBALL |
-| **RecoverySuggestion** | ABSOLUTE_REST, LIGHT_ACTIVITY, ACTIVE_RECOVERY, INCREASE_INTENSITY |
-| **SessionId** | UUID wrapper |
-| **Routine** | Recommended training plan |
+| VO | Context | Package Location | Values |
+|----|---------|------------------|--------|
+| **SessionId** | Training | `training/domain/model/valueobject/SessionId.java` | UUID wrapper (Java record) |
+| **Intensity** | Training | `training/domain/model/valueobject/Intensity.java` | LIGHT(1x), MODERATE(2x), HIGH(3x), EXTREME(4x) |
+| **SportType** | Training | `training/domain/model/valueobject/SportType.java` | GYM, FOOTBALL |
+| **FatigueLevel** | Shared | `shared/domain/model/FatigueLevel.java` | LOW(1), MEDIUM(2), HIGH(3) |
 
-### Domain Services (3)
+### Enums Summary
 
-| Service | Method | Returns |
-|---------|--------|---------|
-| **FatigueCalculationService** | `calculateFatigue(sessions, now)` | FatigueLevel |
-| **RoutineRecommendationService** | `recommendRoutine(athleteId, fatigue, sport)` | Routine |
-| **RecoverySuggestionService** | `getSuggestion(fatigue, sport)` | RecoverySuggestion |
+| Enum | Context | Package Location | Values |
+|------|---------|------------------|--------|
+| **RecoverySuggestion** | Training | `training/domain/model/enums/RecoverySuggestion.java` | ABSOLUTE_REST, LIGHT_ACTIVITY, ACTIVE_RECOVERY, MODERATE_WORKOUT, INCREASE_INTENSITY |
+
+### Domain Services Summary
+
+| Service | Context | Package Location | Responsibility |
+|---------|---------|------------------|----------------|
+| **FatigueCalculator** | Training | `training/domain/service/FatigueCalculator.java` | Calculate fatigue from sessions within 72h window |
+| **RoutineRecommender** | Training | `training/domain/service/RoutineRecommender.java` | Recommend routine based on fatigue + sport type |
+| **RecoverySuggester** | Training | `training/domain/service/RecoverySuggester.java` | Suggest recovery action |
+
+### Policies Summary
+
+| Policy | Context | Package Location | Purpose |
+|--------|---------|------------------|---------|
+| **FatigueRules** | Training | `training/domain/policy/FatigueRules.java` | Fatigue thresholds (HIGH=30, MEDIUM=15) and recovery window (72h) |
+
+### Ports Summary
+
+| Port | Context | Package Location | Implementation |
+|------|---------|------------------|----------------|
+| **AthleteRepository** | Training | `training/domain/port/out/AthleteRepository.java` | `PostgresAthleteRepository` |
+| **TrainingSessionRepository** | Training | `training/domain/port/out/TrainingSessionRepository.java` | `PostgresTrainingSessionRepository` |
+| **RoutineRepository** | Training | `training/domain/port/out/RoutineRepository.java` | `PostgresRoutineRepository` |
+| **FatigueMetricsRepository** | Performance | `performance/domain/port/out/FatigueMetricsRepository.java` | `MongoFatigueMetricsRepository` |
 
 ### Hexagonal Architecture - Inside View
 
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         DOMAIN CORE                                 │
+│                                                                     │
+│   ┌──────────────┐  ┌──────────────┐  ┌────────────────────────┐   │
+│   │   ENTITIES   │  │ VALUE OBJECTS│  │    DOMAIN SERVICES    │   │
+│   │              │  │              │  │                        │   │
+│   │ Athlete      │  │ SessionId    │  │ FatigueCalculator     │   │
+│   │ Training     │  │ Intensity    │  │                       │   │
+│   │   Session    │  │ SportType    │  │ RoutineRecommender   │   │
+│   │ Routine      │  │ FatigueLevel │  │                       │   │
+│   │ SportProfile │  │              │  │ RecoverySuggester    │   │
+│   │ Fatigue      │  │              │  │                       │   │
+│   │   Metrics    │  └──────────────┘  └────────────────────────┘   │
+│   └──────────────┘                                               │
+│                             │                                      │
+│   ┌──────────────┐  ┌──────────────┐  ┌────────────────────────┐ │
+│   │   POLICIES   │  │     ENUMS     │  │        PORTS          │ │
+│   │              │  │              │  │    (Outbound)         │ │
+│   │ FatigueRules │  │RecoverySugge-│  │                        │ │
+│   │ (thresholds, │  │stion         │  │ AthleteRepository    │ │
+│   │   window)    │  └──────────────┘  │ TrainingSessionRepo   │ │
+│   └──────────────┘                    │ RoutineRepository     │ │
+│                                        │ FatigueMetricsRepo    │ │
+│                                        └────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                         DOMAIN CORE                                 │
