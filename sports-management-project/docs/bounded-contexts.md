@@ -11,6 +11,8 @@ This project is divided into two bounded contexts following DDD principles:
 
 ## Training Context
 
+**Package**: `com.sportsclub.training.domain`
+
 **Responsibilities:**
 - Registration and management of athletes
 - Registration and management of training sessions
@@ -20,7 +22,14 @@ This project is divided into two bounded contexts following DDD principles:
 
 **Aggregates:**
 - **Athlete** (Aggregate Root): Entity managing athlete data
-- **TrainingSession** (Aggregate Root): Entity managing session data with embedded Routine
+- **TrainingSession** (Aggregate Root): Entity managing session data
+- **Routine** (Aggregate Root): Entity managing recommended training plans
+- **SportProfile** (Entity): Athlete's sport-specific profile with current fatigue
+
+**Value Objects:**
+- `SessionId` (UUID wrapper)
+- `Intensity` (LIGHT, MODERATE, HIGH, EXTREME)
+- `SportType` (GYM, FOOTBALL)
 
 **Repositories (Ports - Outbound):**
 - `AthleteRepository` → PostgreSQL
@@ -28,19 +37,22 @@ This project is divided into two bounded contexts following DDD principles:
 - `RoutineRepository` → PostgreSQL
 
 **Domain Services:**
-- `FatigueCalculationService`: Calculates fatigue level using formula `(duration/10) × intensityMultiplier`
-- `RoutineRecommendationService`: Recommends routines based on fatigue + sport type
-- `RecoverySuggestionService`: Suggests recovery actions based on fatigue level
+- `FatigueCalculator`: Calculates fatigue level using formula `(duration/10) × intensityMultiplier`
+- `RoutineRecommender`: Recommends routines based on fatigue + sport type
+- `RecoverySuggester`: Suggests recovery actions based on fatigue level
+
+**Policies:**
+- `FatigueRules`: Defines thresholds (HIGH=30, MEDIUM=15) and recovery window (72 hours)
 
 **Technology:**
 - PostgreSQL for transactional data (athletes, sessions, routines)
-- MongoDB for fatigue metrics (via Training Context)
-
-**Boundary:** Contains all business logic for training operations
+- MongoDB for fatigue metrics (via Performance Context integration)
 
 ---
 
 ## Performance Context
+
+**Package**: `com.sportsclub.performance.domain`
 
 **Responsibilities:**
 - Historical storage of fatigue metrics per athlete
@@ -85,7 +97,7 @@ When a training session is registered:
          ↓
 3. TrainingSession persisted in PostgreSQL (Training Context)
          ↓
-4. FatigueCalculationService calculates fatigue
+4. FatigueCalculator calculates fatigue
          ↓
 5. FatigueMetrics stored in MongoDB (Performance Context)
 ```
@@ -100,7 +112,7 @@ When generating a routine:
          ↓
 3. FatigueMetricsRepository queries MongoDB (Performance Context)
          ↓
-4. FatigueCalculationService + RoutineRecommendationService (Training Context)
+4. FatigueCalculator + RoutineRecommender (Training Context)
          ↓
 5. Routine returned with recovery suggestions
 ```
@@ -114,10 +126,23 @@ When generating a routine:
 
 ## Mapping to Ubiquitous Language Terms
 
-| Bounded Context | Entities | Value Objects | Services |
-|----------------|----------|---------------|----------|
-| **Training** | Athlete, TrainingSession, Routine | Intensity, SportType, SessionId | FatigueCalculationService, RoutineRecommendationService, RecoverySuggestionService |
-| **Performance** | FatigueMetrics | FatigueLevel | (Read-only queries via repositories) |
+| Bounded Context | Entities | Value Objects | Domain Services | Policies |
+|----------------|----------|---------------|-----------------|----------|
+| **Training** | Athlete, TrainingSession, Routine, SportProfile | SessionId, Intensity, SportType | FatigueCalculator, RoutineRecommender, RecoverySuggester | FatigueRules |
+| **Performance** | FatigueMetrics | - | (Read-only queries via repositories) | - |
+
+## Identity Definition per Context
+
+### Training Context Identity: `com.sportsclub.training`
+- **Athlete**: Identity = `UUID id` (Aggregate Root)
+- **TrainingSession**: Identity = `SessionId sessionId` (Aggregate Root, UUID wrapper)
+- **Routine**: Identity = `UUID id` (Aggregate Root)
+- **SportProfile**: Identity = `UUID id` (Entity)
+- Uses `FatigueLevel` from shared package
+
+### Performance Context Identity: `com.sportsclub.performance`
+- **FatigueMetrics**: Identity = `UUID id` (Aggregate Root)
+- Uses `FatigueLevel` from shared package
 
 ## Use Case Examples
 
@@ -127,7 +152,7 @@ Scenario: Athlete registers a training session (60 min, HIGH intensity, GYM)
 
 1. Create TrainingSession with duration=60, intensity=HIGH
 2. Calculate fatigue: (60/10) × 3 = 18 points → MEDIUM (15-29)
-3. Recommend routine: MEDIUM + GYM → "Gym Maintenance Routine"
+3. Recommend routine: MEDIUM + GYM → "Rutina de Mantenimiento Gym"
 4. Suggest recovery: MEDIUM + GYM → LIGHT_ACTIVITY
 5. Persist to PostgreSQL (Training Context)
 6. Store fatigue metrics in MongoDB (Performance Context)
@@ -138,11 +163,11 @@ Scenario: Athlete registers a training session (60 min, HIGH intensity, GYM)
 Scenario: Generate routine for athlete with accumulated fatigue
 
 1. Query recent sessions within 72-hour window (Training)
-2. Calculate total fatigue points (Training)
+2. Calculate total fatigue points using FatigueCalculator (Training)
 3. Determine FatigueLevel: LOW/MEDIUM/HIGH (Training)
 4. Query historical FatigueMetrics (Performance)
-5. Recommend routine based on fatigue + sport type (Training)
-6. Return Routine with RecoverySuggestion (Training)
+5. Recommend routine based on fatigue + sport type using RoutineRecommender (Training)
+6. Return Routine with RecoverySuggestion using RecoverySuggester (Training)
 ```
 
 ### Performance Context: View Fatigue Trends
@@ -154,7 +179,6 @@ Scenario: Analytics - View athlete's fatigue history
 3. Calculate trend (improving/declining/stable)
 4. No direct knowledge of Training Context entities
 ```
-
 ---
 
 ## Technology Stack per Context

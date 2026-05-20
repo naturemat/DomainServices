@@ -6,28 +6,46 @@ Academic project implementing Hexagonal Architecture (Ports & Adapters) with Dom
 
 **The System Solves**: Fatigue management for athletes
 
-### Entities (Domain Model)
+### Bounded Contexts
 
-| Entity | Type | Description |
-|--------|------|-------------|
-| **Athlete** | Aggregate Root | Person who trains (GYM or FOOTBALL) |
-| **TrainingSession** | Aggregate Root | Individual training event with calculated fatigue |
-| **FatigueMetrics** | Entity | Historical fatigue record (MongoDB) |
+| Context | Package | Purpose |
+|---------|---------|---------|
+| **Training** | `com.sportsclub.training.domain` | Operational domain (athletes, sessions, routines) |
+| **Performance** | `com.sportsclub.performance.domain` | Analytical domain (fatigue metrics) |
 
-### Value Objects
+### Entities
 
-| Value Object | Values |
-|--------------|--------|
-| **Intensity** | LIGHT(1x), MODERATE(2x), HIGH(3x), EXTREME(4x) |
-| **FatigueLevel** | LOW(0-14), MEDIUM(15-29), HIGH(30+) |
-| **SportType** | GYM, FOOTBALL |
-| **RecoverySuggestion** | ABSOLUTE_REST, LIGHT_ACTIVITY, ACTIVE_RECOVERY, INCREASE_INTENSITY |
+| Entity | Context | Type | Identity | Description |
+|--------|---------|------|----------|-------------|
+| **Athlete** | Training | Aggregate Root | `UUID id` | Person who trains (GYM or FOOTBALL) |
+| **TrainingSession** | Training | Aggregate Root | `SessionId sessionId` | Individual training event with calculated fatigue |
+| **Routine** | Training | Aggregate Root | `UUID id` | Recommended training plan |
+| **SportProfile** | Training | Entity | `UUID id` | Athlete's sport-specific profile |
+| **FatigueMetrics** | Performance | Aggregate Root | `UUID id` | Historical fatigue record (MongoDB) |
 
-### Domain Services (3)
+### Value Objects & Enums
 
-1. **FatigueCalculationService** - Calculates fatigue: `(duration/10) × intensityMultiplier`
-2. **RoutineRecommendationService** - Recommends routine based on fatigue + sport type
-3. **RecoverySuggestionService** - Suggests recovery action
+| Value Object/Enum | Context | Values |
+|--------------------|---------|--------|
+| **SessionId** | Training | UUID wrapper (Java record) |
+| **Intensity** | Training | LIGHT(1x), MODERATE(2x), HIGH(3x), EXTREME(4x) |
+| **SportType** | Training | GYM, FOOTBALL |
+| **FatigueLevel** | Shared | LOW(1), MEDIUM(2), HIGH(3) |
+| **RecoverySuggestion** | Training | ABSOLUTE_REST, LIGHT_ACTIVITY, ACTIVE_RECOVERY, MODERATE_WORKOUT, INCREASE_INTENSITY |
+
+### Domain Services
+
+| Service | Context | File Location | Description |
+|---------|---------|---------------|-------------|
+| **FatigueCalculator** | Training | `training/domain/service/` | Calculates fatigue: `(duration/10) × intensityMultiplier` |
+| **RoutineRecommender** | Training | `training/domain/service/` | Recommends routine based on fatigue + sport type |
+| **RecoverySuggester** | Training | `training/domain/service/` | Suggests recovery action |
+
+### Policies
+
+| Policy | Context | Description |
+|--------|---------|-------------|
+| **FatigueRules** | Training | Thresholds (HIGH=30, MEDIUM=15) and 72h recovery window |
 
 ### Business Rules
 - Sessions within **72-hour window** count toward fatigue
@@ -68,19 +86,22 @@ For detailed documentation, see the `/docs` folder:
                   ▼
 ┌─────────────────────────────────────────┐
 │         PORTS (Interfaces)              │
-│  AthleteRepo │ SessionRepo │ MetricsRepo │
+│  AthleteRepo │ SessionRepo │ RoutineRepo│
+│  FatigueMetricsRepo                     │
 └─────────────────┬───────────────────────┘
                   ▼
 ┌─────────────────────────────────────────┐
 │         DOMAIN (Core - Pure Logic)      │
-│   Entities │ Services │ Value Objects   │
+│   Training Context: Athlete, TrainingSession, │
+│   Routine, SportProfile, Services, Policies │
+│   Performance Context: FatigueMetrics     │
 │   (ZERO Spring annotations)             │
 └─────────────────────────────────────────┘
 ```
 
-- **Domain Layer**: Pure business logic (zero Spring annotations)
-- **Application Layer**: Use cases with `@Transactional`
-- **Infrastructure Layer**: REST adapters, PostgreSQL, MongoDB
+- **Training Context**: Athletes, sessions, routines, FatigueCalculator, RoutineRecommender, RecoverySuggester
+- **Performance Context**: FatigueMetrics, FatigueMetricsRepository
+- **Shared**: FatigueLevel enum
 
 ## API Endpoints
 
