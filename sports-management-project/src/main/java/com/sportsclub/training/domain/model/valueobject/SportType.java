@@ -5,6 +5,12 @@ public enum SportType {
     FOOTBALL("Fútbol");
 
     private final String displayName;
-    SportType(String displayName) { this.displayName = displayName; }
-    public String getDisplayName() { return displayName; }
+
+    SportType(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
 }

@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"com.sportsclub", "com.sports"})
+@ComponentScan(basePackages = { "com.sportsclub", "com.sports" })
 public class SportsManagementApplication {
     public static void main(String[] args) {
         Dotenv dotenv = Dotenv.configure().load();

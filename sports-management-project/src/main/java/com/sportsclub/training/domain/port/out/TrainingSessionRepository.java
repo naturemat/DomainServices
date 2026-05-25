@@ -7,8 +7,14 @@ import java.util.UUID;
 
 public interface TrainingSessionRepository {
     List<TrainingSession> findRecentByAthleteId(UUID athleteId, LocalDateTime since);
+
     TrainingSession save(TrainingSession session);
+
     List<TrainingSession> findByAthleteId(UUID athleteId);
+
     List<TrainingSession> findAll();
-    List<TrainingSession> findByAthleteNameContaining(String name);
+
+    List<TrainingSession> findByAthleteIds(List<UUID> athleteIds);
+
+    List<TrainingSession> findTop50ByOrderBySessionDateDesc();
 }

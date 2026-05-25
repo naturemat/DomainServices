@@ -30,5 +30,17 @@ public class PostgresTrainingSessionRepository implements TrainingSessionReposit
     public List<TrainingSession> findAll() { TypedQuery<TrainingSessionEntity> query = entityManager.createQuery("SELECT s FROM TrainingSessionEntity s ORDER BY s.sessionDate DESC", TrainingSessionEntity.class); return mapper.toDomainSessionList(query.getResultList()); }
 
     @Override
-    public List<TrainingSession> findByAthleteNameContaining(String name) { TypedQuery<TrainingSessionEntity> query = entityManager.createQuery("SELECT s FROM TrainingSessionEntity s JOIN AthleteEntity a ON s.athleteId = a.id WHERE LOWER(a.name) LIKE LOWER(:name) ORDER BY s.sessionDate DESC", TrainingSessionEntity.class); query.setParameter("name", "%" + name + "%"); return mapper.toDomainSessionList(query.getResultList()); }
+    public List<TrainingSession> findByAthleteIds(List<UUID> athleteIds) {
+        if (athleteIds == null || athleteIds.isEmpty()) return List.of();
+        TypedQuery<TrainingSessionEntity> query = entityManager.createQuery("SELECT s FROM TrainingSessionEntity s WHERE s.athleteId IN :athleteIds ORDER BY s.sessionDate DESC", TrainingSessionEntity.class);
+        query.setParameter("athleteIds", athleteIds);
+        return mapper.toDomainSessionList(query.getResultList());
+    }
+
+    @Override
+    public List<TrainingSession> findTop50ByOrderBySessionDateDesc() {
+        TypedQuery<TrainingSessionEntity> query = entityManager.createQuery("SELECT s FROM TrainingSessionEntity s ORDER BY s.sessionDate DESC", TrainingSessionEntity.class);
+        query.setMaxResults(50);
+        return mapper.toDomainSessionList(query.getResultList());
+    }
 }

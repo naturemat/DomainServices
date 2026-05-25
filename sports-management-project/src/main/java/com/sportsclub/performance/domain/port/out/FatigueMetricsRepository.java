@@ -9,7 +9,10 @@ import java.util.UUID;
 
 public interface FatigueMetricsRepository {
     void save(UUID athleteId, FatigueLevel fatigueLevel, LocalDateTime calculatedAt);
+
     Optional<FatigueLevel> findLatestByAthleteId(UUID athleteId);
+
     List<FatigueMetrics> findByAthleteId(UUID athleteId);
+
     List<FatigueMetrics> findByAthleteIdAndDateRange(UUID athleteId, LocalDateTime start, LocalDateTime end);
 }

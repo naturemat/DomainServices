@@ -10,12 +10,21 @@ import java.util.UUID;
 
 public class GetFatigueHistoryUseCase {
     private final FatigueMetricsRepository fatigueMetricsRepository;
-    public GetFatigueHistoryUseCase(FatigueMetricsRepository fatigueMetricsRepository) { this.fatigueMetricsRepository = fatigueMetricsRepository; }
 
-    public Optional<FatigueLevel> getLatestFatigueLevel(UUID athleteId) { return fatigueMetricsRepository.findLatestByAthleteId(athleteId); }
+    public GetFatigueHistoryUseCase(FatigueMetricsRepository fatigueMetricsRepository) {
+        this.fatigueMetricsRepository = fatigueMetricsRepository;
+    }
+
+    public Optional<FatigueLevel> getLatestFatigueLevel(UUID athleteId) {
+        return fatigueMetricsRepository.findLatestByAthleteId(athleteId);
+    }
+
     public List<FatigueMetrics> getFatigueHistory(UUID athleteId, int days) {
         LocalDateTime startDate = LocalDateTime.now().minusDays(days);
         return fatigueMetricsRepository.findByAthleteIdAndDateRange(athleteId, startDate, LocalDateTime.now());
     }
-    public List<FatigueMetrics> getAllFatigueMetrics(UUID athleteId) { return fatigueMetricsRepository.findByAthleteId(athleteId); }
+
+    public List<FatigueMetrics> getAllFatigueMetrics(UUID athleteId) {
+        return fatigueMetricsRepository.findByAthleteId(athleteId);
+    }
 }

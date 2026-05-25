@@ -11,12 +11,17 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class RegisterAthleteUseCase {
     private final AthleteRepository athleteRepository;
-    public RegisterAthleteUseCase(AthleteRepository athleteRepository) { this.athleteRepository = athleteRepository; }
+
+    public RegisterAthleteUseCase(AthleteRepository athleteRepository) {
+        this.athleteRepository = athleteRepository;
+    }
 
     @Transactional
     public RegisterAthleteResponse execute(RegisterAthleteRequest request) {
-        Athlete athlete = Athlete.create(request.getName(), SportType.valueOf(request.getSportType()), request.getBirthDate());
+        Athlete athlete = Athlete.create(request.getName(), SportType.valueOf(request.getSportType()),
+                request.getBirthDate());
         Athlete savedAthlete = athleteRepository.save(athlete);
-        return new RegisterAthleteResponse(savedAthlete.getId(), savedAthlete.getName(), savedAthlete.getSportType().name(), savedAthlete.getBirthDate(), savedAthlete.getCreatedAt());
+        return new RegisterAthleteResponse(savedAthlete.getId(), savedAthlete.getName(),
+                savedAthlete.getSportType().name(), savedAthlete.getBirthDate(), savedAthlete.getCreatedAt());
     }
 }

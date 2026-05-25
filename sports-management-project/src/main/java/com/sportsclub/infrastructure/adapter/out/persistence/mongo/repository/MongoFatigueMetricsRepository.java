@@ -16,17 +16,39 @@ import java.util.UUID;
 @Repository
 public class MongoFatigueMetricsRepository implements FatigueMetricsRepository {
     private final MongoTemplate mongoTemplate;
-    public MongoFatigueMetricsRepository(MongoTemplate mongoTemplate) { this.mongoTemplate = mongoTemplate; }
+
+    public MongoFatigueMetricsRepository(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
+    }
 
     @Override
-    public void save(UUID athleteId, FatigueLevel fatigueLevel, LocalDateTime calculatedAt) { mongoTemplate.save(new FatigueMetricsDocument(athleteId, fatigueLevel.name(), calculatedAt)); }
+    public void save(UUID athleteId, FatigueLevel fatigueLevel, LocalDateTime calculatedAt) {
+        mongoTemplate.save(new FatigueMetricsDocument(athleteId, fatigueLevel.name(), calculatedAt));
+    }
 
     @Override
-    public Optional<FatigueLevel> findLatestByAthleteId(UUID athleteId) { Query query = new Query().addCriteria(Criteria.where("athleteId").is(athleteId)).limit(1); FatigueMetricsDocument doc = mongoTemplate.findOne(query, FatigueMetricsDocument.class); return doc == null ? Optional.empty() : Optional.of(FatigueLevel.valueOf(doc.getFatigueLevel())); }
+    public Optional<FatigueLevel> findLatestByAthleteId(UUID athleteId) {
+        Query query = new Query().addCriteria(Criteria.where("athleteId").is(athleteId)).limit(1);
+        FatigueMetricsDocument doc = mongoTemplate.findOne(query, FatigueMetricsDocument.class);
+        return doc == null ? Optional.empty() : Optional.of(FatigueLevel.valueOf(doc.getFatigueLevel()));
+    }
 
     @Override
-    public List<FatigueMetrics> findByAthleteId(UUID athleteId) { Query query = new Query().addCriteria(Criteria.where("athleteId").is(athleteId)); return mongoTemplate.find(query, FatigueMetricsDocument.class).stream().map(doc -> new FatigueMetrics(UUID.fromString(doc.getId()), athleteId, FatigueLevel.valueOf(doc.getFatigueLevel()), doc.getCalculatedAt())).toList(); }
+    public List<FatigueMetrics> findByAthleteId(UUID athleteId) {
+        Query query = new Query().addCriteria(Criteria.where("athleteId").is(athleteId));
+        return mongoTemplate.find(query, FatigueMetricsDocument.class).stream()
+                .map(doc -> new FatigueMetrics(UUID.fromString(doc.getId()), athleteId,
+                        FatigueLevel.valueOf(doc.getFatigueLevel()), doc.getCalculatedAt()))
+                .toList();
+    }
 
     @Override
-    public List<FatigueMetrics> findByAthleteIdAndDateRange(UUID athleteId, LocalDateTime start, LocalDateTime end) { Query query = new Query().addCriteria(Criteria.where("athleteId").is(athleteId).and("calculatedAt").gte(start).lte(end)); return mongoTemplate.find(query, FatigueMetricsDocument.class).stream().map(doc -> new FatigueMetrics(UUID.fromString(doc.getId()), athleteId, FatigueLevel.valueOf(doc.getFatigueLevel()), doc.getCalculatedAt())).toList(); }
+    public List<FatigueMetrics> findByAthleteIdAndDateRange(UUID athleteId, LocalDateTime start, LocalDateTime end) {
+        Query query = new Query()
+                .addCriteria(Criteria.where("athleteId").is(athleteId).and("calculatedAt").gte(start).lte(end));
+        return mongoTemplate.find(query, FatigueMetricsDocument.class).stream()
+                .map(doc -> new FatigueMetrics(UUID.fromString(doc.getId()), athleteId,
+                        FatigueLevel.valueOf(doc.getFatigueLevel()), doc.getCalculatedAt()))
+                .toList();
+    }
 }

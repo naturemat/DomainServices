@@ -13,7 +13,7 @@ public class SportProfile {
     private final int totalMinutesThisWeek;
 
     public SportProfile(UUID id, UUID athleteId, SportType sportType,
-                        FatigueLevel currentFatigueLevel, int totalSessionsThisWeek, int totalMinutesThisWeek) {
+            FatigueLevel currentFatigueLevel, int totalSessionsThisWeek, int totalMinutesThisWeek) {
         this.id = id;
         this.athleteId = athleteId;
         this.sportType = sportType;
@@ -22,12 +22,29 @@ public class SportProfile {
         this.totalMinutesThisWeek = totalMinutesThisWeek;
     }
 
-    public UUID getId() { return id; }
-    public UUID getAthleteId() { return athleteId; }
-    public SportType getSportType() { return sportType; }
-    public FatigueLevel getCurrentFatigueLevel() { return currentFatigueLevel; }
-    public int getTotalSessionsThisWeek() { return totalSessionsThisWeek; }
-    public int getTotalMinutesThisWeek() { return totalMinutesThisWeek; }
+    public UUID getId() {
+        return id;
+    }
+
+    public UUID getAthleteId() {
+        return athleteId;
+    }
+
+    public SportType getSportType() {
+        return sportType;
+    }
+
+    public FatigueLevel getCurrentFatigueLevel() {
+        return currentFatigueLevel;
+    }
+
+    public int getTotalSessionsThisWeek() {
+        return totalSessionsThisWeek;
+    }
+
+    public int getTotalMinutesThisWeek() {
+        return totalMinutesThisWeek;
+    }
 
     public SportProfile withUpdatedFatigue(FatigueLevel newFatigueLevel) {
         return new SportProfile(id, athleteId, sportType, newFatigueLevel, totalSessionsThisWeek, totalMinutesThisWeek);

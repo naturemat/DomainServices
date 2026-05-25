@@ -16,8 +16,8 @@ public class Routine {
     private final LocalDateTime createdAt;
 
     public Routine(UUID id, UUID athleteId, String name, String description,
-                   int recommendedDurationMinutes, Intensity recommendedIntensity,
-                   RecoverySuggestion recoverySuggestion, LocalDateTime createdAt) {
+            int recommendedDurationMinutes, Intensity recommendedIntensity,
+            RecoverySuggestion recoverySuggestion, LocalDateTime createdAt) {
         this.id = id;
         this.athleteId = athleteId;
         this.name = name;
@@ -28,19 +28,42 @@ public class Routine {
         this.createdAt = createdAt;
     }
 
-    public UUID getId() { return id; }
-    public UUID getAthleteId() { return athleteId; }
-    public String getName() { return name; }
-    public String getDescription() { return description; }
-    public int getRecommendedDurationMinutes() { return recommendedDurationMinutes; }
-    public Intensity getRecommendedIntensity() { return recommendedIntensity; }
-    public RecoverySuggestion getRecoverySuggestion() { return recoverySuggestion; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
+    public UUID getId() {
+        return id;
+    }
+
+    public UUID getAthleteId() {
+        return athleteId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public int getRecommendedDurationMinutes() {
+        return recommendedDurationMinutes;
+    }
+
+    public Intensity getRecommendedIntensity() {
+        return recommendedIntensity;
+    }
+
+    public RecoverySuggestion getRecoverySuggestion() {
+        return recoverySuggestion;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 
     public static Routine create(UUID athleteId, String name, String description,
-                                 int recommendedDurationMinutes, Intensity recommendedIntensity,
-                                 RecoverySuggestion recoverySuggestion) {
+            int recommendedDurationMinutes, Intensity recommendedIntensity,
+            RecoverySuggestion recoverySuggestion) {
         return new Routine(UUID.randomUUID(), athleteId, name, description, recommendedDurationMinutes,
-            recommendedIntensity, recoverySuggestion, LocalDateTime.now());
+                recommendedIntensity, recoverySuggestion, LocalDateTime.now());
     }
 }

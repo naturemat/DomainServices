@@ -19,11 +19,29 @@ public class Athlete {
         this.createdAt = createdAt;
     }
 
-    public UUID getId() { return id; }
-    public String getName() { return name; }
-    public SportType getSportType() { return sportType; }
-    public LocalDate getBirthDate() { return birthDate; }
-    public LocalDate getCreatedAt() { return createdAt; }
+    public UUID getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public SportType getSportType() {
+        return sportType;
+    }
+
+    public LocalDate getBirthDate() {
+        return birthDate;
+    }
+
+    public LocalDate getCreatedAt() {
+        return createdAt;
+    }
+
+    public int calculateAge() {
+        return java.time.Period.between(birthDate, LocalDate.now()).getYears();
+    }
 
     public static Athlete create(String name, SportType sportType, LocalDate birthDate) {
         return new Athlete(UUID.randomUUID(), name, sportType, birthDate, LocalDate.now());

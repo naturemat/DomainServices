@@ -14,23 +14,52 @@ import java.util.UUID;
 
 @Repository
 public class PostgresAthleteRepository implements AthleteRepository {
-    @PersistenceContext private EntityManager entityManager;
+    @PersistenceContext
+    private EntityManager entityManager;
     private final DomainEntityMapper mapper = new DomainEntityMapper();
 
     @Override
-    public Optional<Athlete> findById(UUID id) { AthleteEntity entity = entityManager.find(AthleteEntity.class, id); return Optional.ofNullable(mapper.toDomain(entity)); }
+    public Optional<Athlete> findById(UUID id) {
+        AthleteEntity entity = entityManager.find(AthleteEntity.class, id);
+        return Optional.ofNullable(mapper.toDomain(entity));
+    }
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<Athlete> findAll() { Query query = entityManager.createQuery("SELECT a FROM AthleteEntity a"); return query.getResultList().stream().map(e -> mapper.toDomain((AthleteEntity) e)).toList(); }
+    public List<Athlete> findAll() {
+        Query query = entityManager.createQuery("SELECT a FROM AthleteEntity a");
+        return query.getResultList().stream().map(e -> mapper.toDomain((AthleteEntity) e)).toList();
+    }
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<Athlete> findByNameContaining(String name) { Query query = entityManager.createQuery("SELECT a FROM AthleteEntity a WHERE LOWER(a.name) LIKE LOWER(:name)"); query.setParameter("name", "%" + name + "%"); return query.getResultList().stream().map(e -> mapper.toDomain((AthleteEntity) e)).toList(); }
+    public List<Athlete> findByNameContaining(String name) {
+        Query query = entityManager.createQuery("SELECT a FROM AthleteEntity a WHERE LOWER(a.name) LIKE LOWER(:name)");
+        query.setParameter("name", "%" + name + "%");
+        return query.getResultList().stream().map(e -> mapper.toDomain((AthleteEntity) e)).toList();
+    }
 
     @Override
-    public Athlete save(Athlete athlete) { if (athlete.getId() == null) { entityManager.persist(mapper.toEntity(athlete)); return athlete; } else { entityManager.merge(mapper.toEntity(athlete)); return athlete; } }
+    @SuppressWarnings("unchecked")
+    public List<Athlete> findTop100ByOrderByName() {
+        Query query = entityManager.createQuery("SELECT a FROM AthleteEntity a ORDER BY a.name ASC");
+        query.setMaxResults(100);
+        return query.getResultList().stream().map(e -> mapper.toDomain((AthleteEntity) e)).toList();
+    }
 
     @Override
-    public boolean existsById(UUID id) { return entityManager.find(AthleteEntity.class, id) != null; }
+    public Athlete save(Athlete athlete) {
+        if (athlete.getId() == null) {
+            entityManager.persist(mapper.toEntity(athlete));
+            return athlete;
+        } else {
+            entityManager.merge(mapper.toEntity(athlete));
+            return athlete;
+        }
+    }
+
+    @Override
+    public boolean existsById(UUID id) {
+        return entityManager.find(AthleteEntity.class, id) != null;
+    }
 }

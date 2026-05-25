@@ -15,7 +15,7 @@ public class TrainingSession {
     private final LocalDateTime createdAt;
 
     public TrainingSession(SessionId sessionId, UUID athleteId, LocalDateTime sessionDate,
-                           int durationMinutes, Intensity intensity, int caloriesBurned, LocalDateTime createdAt) {
+            int durationMinutes, Intensity intensity, int caloriesBurned, LocalDateTime createdAt) {
         this.sessionId = sessionId;
         this.athleteId = athleteId;
         this.sessionDate = sessionDate;
@@ -25,17 +25,44 @@ public class TrainingSession {
         this.createdAt = createdAt;
     }
 
-    public SessionId getSessionId() { return sessionId; }
-    public UUID getAthleteId() { return athleteId; }
-    public LocalDateTime getSessionDate() { return sessionDate; }
-    public int getDurationMinutes() { return durationMinutes; }
-    public Intensity getIntensity() { return intensity; }
-    public int getCaloriesBurned() { return caloriesBurned; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
+    public SessionId getSessionId() {
+        return sessionId;
+    }
+
+    public UUID getAthleteId() {
+        return athleteId;
+    }
+
+    public LocalDateTime getSessionDate() {
+        return sessionDate;
+    }
+
+    public int getDurationMinutes() {
+        return durationMinutes;
+    }
+
+    public Intensity getIntensity() {
+        return intensity;
+    }
+
+    public int getCaloriesBurned() {
+        return caloriesBurned;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 
     public static TrainingSession create(UUID athleteId, LocalDateTime sessionDate,
-                                        int durationMinutes, Intensity intensity, int caloriesBurned) {
+            int durationMinutes, Intensity intensity, int caloriesBurned) {
         return new TrainingSession(SessionId.generate(), athleteId, sessionDate, durationMinutes,
-            intensity, caloriesBurned, LocalDateTime.now());
+                intensity, caloriesBurned, LocalDateTime.now());
+    }
+
+    public static TrainingSession create(UUID athleteId, LocalDateTime sessionDate, int durationMinutes,
+            Intensity intensity) {
+        int caloriesBurned = intensity.calculateCalories(durationMinutes);
+        return new TrainingSession(SessionId.generate(), athleteId, sessionDate, durationMinutes, intensity,
+                caloriesBurned, LocalDateTime.now());
     }
 }

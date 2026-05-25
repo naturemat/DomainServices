@@ -3,12 +3,17 @@ import './DomainExplainer.css';
 const DomainServiceFlow = ({ session, sportType }) => {
   if (!session) return null;
 
-  const intensityValues = { LOW: 1, MODERATE: 1.5, HIGH: 2, EXTREME: 2.5 };
+  const intensityValues = { LIGHT: 1, MODERATE: 2, HIGH: 3, EXTREME: 4 };
   const intensity = session.intensity || 'MODERATE';
   const duration = session.durationMinutes || 60;
   const basePoints = Math.floor(duration / 10);
-  const multiplier = intensityValues[intensity];
+  const multiplier = intensityValues[intensity] || 1;
   const totalPoints = basePoints * multiplier;
+  
+  const calorieMultipliers = { LIGHT: 1.0, MODERATE: 1.5, HIGH: 2.0, EXTREME: 2.5 };
+  const calorieMultiplier = calorieMultipliers[intensity] || 1.5;
+  const baseCalories = duration * 5.0;
+  const totalCalories = Math.round(baseCalories * calorieMultiplier);
   const fatigueLevel = session.fatigueLevel || 'MEDIUM';
   
   const getFatigueThreshold = (level) => {
@@ -48,17 +53,17 @@ const DomainServiceFlow = ({ session, sportType }) => {
       <div className="flow-step step-2">
         <div className="step-badge">2</div>
         <div className="step-content">
-          <h4>FatigueCalculationService</h4>
-          <p className="service-desc">Calculates fatigue based on intensity × duration</p>
+          <h4>Intensity Domain Service (Calories)</h4>
+          <p className="service-desc">Calculates calories based on intensity × duration × 5.0</p>
           <div className="calculation-display">
             <div className="calc-line">
-              <span>{duration} min ÷ 10 = {basePoints} base points</span>
+              <span>{duration} min × 5.0 = {baseCalories} base calories</span>
             </div>
             <div className="calc-line">
-              <span>× {intensity} intensity multiplier ({multiplier}x)</span>
+              <span>× {intensity} multiplier ({calorieMultiplier}x)</span>
             </div>
             <div className="calc-line result">
-              <span>= <strong>{totalPoints} fatigue points</strong></span>
+              <span>= <strong>{totalCalories} calories burned</strong></span>
             </div>
           </div>
         </div>
@@ -69,7 +74,28 @@ const DomainServiceFlow = ({ session, sportType }) => {
       <div className="flow-step step-3">
         <div className="step-badge">3</div>
         <div className="step-content">
-          <h4>Determine Fatigue Level</h4>
+          <h4>FatigueCalculator Domain Service</h4>
+          <p className="service-desc">Calculates fatigue based on intensity multiplier × (duration ÷ 10)</p>
+          <div className="calculation-display">
+            <div className="calc-line">
+              <span>{duration} min ÷ 10 = {basePoints} base points</span>
+            </div>
+            <div className="calc-line">
+              <span>× {intensity} fatigue multiplier ({multiplier}x)</span>
+            </div>
+            <div className="calc-line result">
+              <span>= <strong>{totalPoints} fatigue points</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flow-arrow">↓</div>
+
+      <div className="flow-step step-4">
+        <div className="step-badge">4</div>
+        <div className="step-content">
+          <h4>Determine Fatigue Level (FatigueConfiguration)</h4>
           <div className="threshold-display">
             <div className="threshold-bar">
               <div className="threshold-segment low">LOW (0-14)</div>
@@ -88,10 +114,10 @@ const DomainServiceFlow = ({ session, sportType }) => {
 
       <div className="flow-arrow">↓</div>
 
-      <div className="flow-step step-4">
-        <div className="step-badge">4</div>
+      <div className="flow-step step-5">
+        <div className="step-badge">5</div>
         <div className="step-content">
-          <h4>RoutineRecommendationService</h4>
+          <h4>RoutineRecommender Domain Service</h4>
           <p className="service-desc">Recommends routine based on fatigue + sport type</p>
           <div className="routine-decision">
             <div className="decision-path">
@@ -113,10 +139,10 @@ const DomainServiceFlow = ({ session, sportType }) => {
 
       <div className="flow-arrow">↓</div>
 
-      <div className="flow-step step-5">
-        <div className="step-badge">5</div>
+      <div className="flow-step step-6">
+        <div className="step-badge">6</div>
         <div className="step-content">
-          <h4>RecoverySuggestionService</h4>
+          <h4>RecoverySuggester Domain Service</h4>
           <p className="service-desc">Suggests recovery based on fatigue level</p>
           <div className="recovery-display">
             <div className={`recovery-card ${session.recoverySuggestion?.toLowerCase() || 'medium'}`}>
@@ -148,7 +174,7 @@ const DomainServiceFlow = ({ session, sportType }) => {
 const SimpleFatigueExplanation = ({ session }) => {
   if (!session) return null;
 
-  const intensityValues = { LOW: 1, MODERATE: 1.5, HIGH: 2, EXTREME: 2.5 };
+  const intensityValues = { LIGHT: 1, MODERATE: 2, HIGH: 3, EXTREME: 4 };
   const basePoints = Math.floor((session.durationMinutes || 60) / 10);
   const totalPoints = basePoints * (intensityValues[session.intensity] || 1);
 
@@ -156,7 +182,7 @@ const SimpleFatigueExplanation = ({ session }) => {
     <div className="fatigue-simple">
       <h4>Fatigue Calculation</h4>
       <div className="simple-formula">
-        <span className="formula">{session.durationMinutes} ÷ 10 × {session.intensity === 'LOW' ? '1' : session.intensity === 'MODERATE' ? '1.5' : session.intensity === 'HIGH' ? '2' : '2.5'}</span>
+        <span className="formula">{session.durationMinutes} ÷ 10 × {session.intensity === 'LIGHT' ? '1' : session.intensity === 'MODERATE' ? '2' : session.intensity === 'HIGH' ? '3' : '4'}</span>
         <span className="equals">=</span>
         <span className="result">{totalPoints} points</span>
       </div>

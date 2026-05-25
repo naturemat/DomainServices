@@ -23,21 +23,34 @@ public class TrainingController {
     private final SearchSessionsUseCase searchSessionsUseCase;
     private final TrainingSessionRepository trainingSessionRepository;
 
-    public TrainingController(RegisterTrainingSessionUseCase registerTrainingSessionUseCase, GenerateRoutineUseCase generateRoutineUseCase, SearchSessionsUseCase searchSessionsUseCase, TrainingSessionRepository trainingSessionRepository) {
-        this.registerTrainingSessionUseCase = registerTrainingSessionUseCase; this.generateRoutineUseCase = generateRoutineUseCase; this.searchSessionsUseCase = searchSessionsUseCase; this.trainingSessionRepository = trainingSessionRepository;
+    public TrainingController(RegisterTrainingSessionUseCase registerTrainingSessionUseCase,
+            GenerateRoutineUseCase generateRoutineUseCase, SearchSessionsUseCase searchSessionsUseCase,
+            TrainingSessionRepository trainingSessionRepository) {
+        this.registerTrainingSessionUseCase = registerTrainingSessionUseCase;
+        this.generateRoutineUseCase = generateRoutineUseCase;
+        this.searchSessionsUseCase = searchSessionsUseCase;
+        this.trainingSessionRepository = trainingSessionRepository;
     }
 
     @GetMapping("/sessions")
-    public ResponseEntity<List<TrainingSession>> getAllSessions() { return ResponseEntity.ok(trainingSessionRepository.findAll()); }
+    public ResponseEntity<List<TrainingSession>> getAllSessions() {
+        return ResponseEntity.ok(trainingSessionRepository.findAll());
+    }
 
     @GetMapping("/sessions/search")
-    public ResponseEntity<List<TrainingSession>> searchSessions(@RequestParam String athleteName) { return ResponseEntity.ok(searchSessionsUseCase.executeByAthleteName(athleteName)); }
+    public ResponseEntity<List<TrainingSession>> searchSessions(@RequestParam String athleteName) {
+        return ResponseEntity.ok(searchSessionsUseCase.executeByAthleteName(athleteName));
+    }
 
     @GetMapping("/sessions/by-athlete/{athleteId}")
-    public ResponseEntity<List<TrainingSession>> getSessionsByAthlete(@PathVariable UUID athleteId) { return ResponseEntity.ok(searchSessionsUseCase.executeByAthleteId(athleteId)); }
+    public ResponseEntity<List<TrainingSession>> getSessionsByAthlete(@PathVariable UUID athleteId) {
+        return ResponseEntity.ok(searchSessionsUseCase.executeByAthleteId(athleteId));
+    }
 
     @GetMapping("/ping")
-    public ResponseEntity<String> ping() { return ResponseEntity.ok("pong"); }
+    public ResponseEntity<String> ping() {
+        return ResponseEntity.ok("pong");
+    }
 
     @PostMapping("/sessions")
     public ResponseEntity<RegisterSessionResponse> registerSession(@Valid @RequestBody RegisterSessionRequest request) {
@@ -46,5 +59,7 @@ public class TrainingController {
     }
 
     @GetMapping("/routines/{athleteId}")
-    public ResponseEntity<RoutineResponse> generateRoutine(@PathVariable UUID athleteId) { return ResponseEntity.ok(generateRoutineUseCase.execute(athleteId)); }
+    public ResponseEntity<RoutineResponse> generateRoutine(@PathVariable UUID athleteId) {
+        return ResponseEntity.ok(generateRoutineUseCase.execute(athleteId));
+    }
 }

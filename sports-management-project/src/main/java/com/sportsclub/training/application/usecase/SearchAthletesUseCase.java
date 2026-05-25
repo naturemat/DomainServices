@@ -12,12 +12,17 @@ public class SearchAthletesUseCase {
     private final AthleteRepository athleteRepository;
     private static final int MAX_SEARCH_LENGTH = 100;
 
-    public SearchAthletesUseCase(AthleteRepository athleteRepository) { this.athleteRepository = athleteRepository; }
+    public SearchAthletesUseCase(AthleteRepository athleteRepository) {
+        this.athleteRepository = athleteRepository;
+    }
 
     @Transactional(readOnly = true)
     public List<Athlete> execute(String name) {
-        if (name != null && name.length() > MAX_SEARCH_LENGTH) throw new InvalidSearchParameterException("Search query exceeds maximum length of " + MAX_SEARCH_LENGTH + " characters");
-        if (name == null || name.trim().isEmpty()) return athleteRepository.findAll();
+        if (name != null && name.length() > MAX_SEARCH_LENGTH)
+            throw new InvalidSearchParameterException(
+                    "Search query exceeds maximum length of " + MAX_SEARCH_LENGTH + " characters");
+        if (name == null || name.trim().isEmpty())
+            return athleteRepository.findTop100ByOrderByName();
         return athleteRepository.findByNameContaining(name.trim());
     }
 }

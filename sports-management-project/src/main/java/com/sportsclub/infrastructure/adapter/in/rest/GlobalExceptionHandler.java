@@ -46,7 +46,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleValidationException(MethodArgumentNotValidException ex) {
         logger.warn("Validation error: {}", ex.getMessage());
         Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(fieldError -> errors.put(fieldError.getField(), fieldError.getDefaultMessage()));
+        ex.getBindingResult().getFieldErrors()
+                .forEach(fieldError -> errors.put(fieldError.getField(), fieldError.getDefaultMessage()));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 
@@ -55,18 +56,31 @@ public class GlobalExceptionHandler {
         logger.warn("Invalid argument: {}", ex.getMessage());
         Map<String, String> error = new HashMap<>();
         String message = ex.getMessage();
-        if (message != null && message.toLowerCase().contains("sporttype")) { error.put("errorCode", "INVALID_SPORT_TYPE"); error.put("error", "Sport type must be GYM or FOOTBALL"); }
-        else if (message != null && message.toLowerCase().contains("uuid")) { error.put("errorCode", "INVALID_ATHLETE_ID"); error.put("error", "Athlete ID must be a valid UUID"); }
-        else { error.put("errorCode", "INVALID_REQUEST"); error.put("error", message); }
+        if (message != null && message.toLowerCase().contains("sporttype")) {
+            error.put("errorCode", "INVALID_SPORT_TYPE");
+            error.put("error", "Sport type must be GYM or FOOTBALL");
+        } else if (message != null && message.toLowerCase().contains("uuid")) {
+            error.put("errorCode", "INVALID_ATHLETE_ID");
+            error.put("error", "Athlete ID must be a valid UUID");
+        } else {
+            error.put("errorCode", "INVALID_REQUEST");
+            error.put("error", message);
+        }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<Map<String, String>> handleTypeMismatch(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ex) {
+    public ResponseEntity<Map<String, String>> handleTypeMismatch(
+            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ex) {
         logger.warn("Type mismatch: {}", ex.getMessage());
         Map<String, String> error = new HashMap<>();
-        if (ex.getRequiredType() != null && ex.getRequiredType().equals(UUID.class)) { error.put("errorCode", "INVALID_ATHLETE_ID"); error.put("error", "Athlete ID must be a valid UUID"); }
-        else { error.put("errorCode", "INVALID_REQUEST"); error.put("error", "Invalid parameter format"); }
+        if (ex.getRequiredType() != null && ex.getRequiredType().equals(UUID.class)) {
+            error.put("errorCode", "INVALID_ATHLETE_ID");
+            error.put("error", "Athlete ID must be a valid UUID");
+        } else {
+            error.put("errorCode", "INVALID_REQUEST");
+            error.put("error", "Invalid parameter format");
+        }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 

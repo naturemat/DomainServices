@@ -11,13 +11,27 @@ public class FatigueMetrics {
     private final LocalDateTime calculatedAt;
 
     public FatigueMetrics(UUID id, UUID athleteId, FatigueLevel fatigueLevel, LocalDateTime calculatedAt) {
-        this.id = id; this.athleteId = athleteId; this.fatigueLevel = fatigueLevel; this.calculatedAt = calculatedAt;
+        this.id = id;
+        this.athleteId = athleteId;
+        this.fatigueLevel = fatigueLevel;
+        this.calculatedAt = calculatedAt;
     }
 
-    public UUID getId() { return id; }
-    public UUID getAthleteId() { return athleteId; }
-    public FatigueLevel getFatigueLevel() { return fatigueLevel; }
-    public LocalDateTime getCalculatedAt() { return calculatedAt; }
+    public UUID getId() {
+        return id;
+    }
+
+    public UUID getAthleteId() {
+        return athleteId;
+    }
+
+    public FatigueLevel getFatigueLevel() {
+        return fatigueLevel;
+    }
+
+    public LocalDateTime getCalculatedAt() {
+        return calculatedAt;
+    }
 
     public static FatigueMetrics create(UUID athleteId, FatigueLevel fatigueLevel, LocalDateTime calculatedAt) {
         return new FatigueMetrics(UUID.randomUUID(), athleteId, fatigueLevel, calculatedAt);

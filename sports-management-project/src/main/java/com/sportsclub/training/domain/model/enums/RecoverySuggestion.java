@@ -8,6 +8,12 @@ public enum RecoverySuggestion {
     INCREASE_INTENSITY("Incrementar intensidad - El atleta está recuperado");
 
     private final String description;
-    RecoverySuggestion(String description) { this.description = description; }
-    public String getDescription() { return description; }
+
+    RecoverySuggestion(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
 }
