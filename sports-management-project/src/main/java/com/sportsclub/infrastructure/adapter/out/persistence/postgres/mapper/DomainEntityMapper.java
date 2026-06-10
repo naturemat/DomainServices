@@ -3,7 +3,7 @@ package com.sportsclub.infrastructure.adapter.out.persistence.postgres.mapper;
 import com.sportsclub.training.domain.model.entity.Athlete;
 import com.sportsclub.training.domain.model.entity.Routine;
 import com.sportsclub.training.domain.model.entity.TrainingSession;
-import com.sportsclub.training.domain.model.enums.RecoverySuggestion;
+import com.sportsclub.training.domain.model.valueobject.RecoverySuggestion;
 import com.sportsclub.training.domain.model.valueobject.Intensity;
 import com.sportsclub.training.domain.model.valueobject.SportType;
 import com.sportsclub.training.domain.model.valueobject.SessionId;

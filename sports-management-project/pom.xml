@@ -131,7 +131,7 @@
                 <directory>src/main/resources</directory>
             </resource>
         </resources>
-        <testSourceDirectory>test</testSourceDirectory>
+        <testSourceDirectory>${project.basedir}/src/test/java</testSourceDirectory>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -147,8 +147,6 @@
                         <configuration>
                             <sources>
                                 <source>${project.basedir}/src/main/java/com/sportsclub/training</source>
-                                <source>${project.basedir}/src/main/java/com/sportsclub/performance</source>
-                                <source>${project.basedir}/src/main/java/com/sportsclub/shared</source>
                                 <source>${project.basedir}/src/main/java/com/sportsclub/infrastructure</source>
                             </sources>
                         </configuration>

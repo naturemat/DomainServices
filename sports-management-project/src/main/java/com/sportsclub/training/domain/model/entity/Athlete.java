@@ -44,6 +44,10 @@ public class Athlete {
     }
 
     public static Athlete create(String name, SportType sportType, LocalDate birthDate) {
+        if (name == null || name.isBlank()) throw new IllegalArgumentException("Athlete name must not be blank");
+        if (sportType == null) throw new IllegalArgumentException("Sport type must not be null");
+        if (birthDate == null) throw new IllegalArgumentException("Birth date must not be null");
+        if (birthDate.isAfter(LocalDate.now())) throw new IllegalArgumentException("Birth date must be in the past");
         return new Athlete(UUID.randomUUID(), name, sportType, birthDate, LocalDate.now());
     }
 }

@@ -1,7 +1,8 @@
 package com.sportsclub.training.domain.model.entity;
 
+import com.sportsclub.training.domain.model.valueobject.FatigueLevel;
 import com.sportsclub.training.domain.model.valueobject.Intensity;
-import com.sportsclub.training.domain.model.enums.RecoverySuggestion;
+import com.sportsclub.training.domain.model.valueobject.RecoverySuggestion;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -60,10 +61,34 @@ public class Routine {
         return createdAt;
     }
 
+    public boolean isSuitableFor(FatigueLevel fatigue) {
+        return switch (fatigue) {
+            case HIGH -> recommendedIntensity == Intensity.LIGHT;
+            case MEDIUM -> recommendedIntensity != Intensity.HIGH;
+            case LOW -> true;
+        };
+    }
+
     public static Routine create(UUID athleteId, String name, String description,
             int recommendedDurationMinutes, Intensity recommendedIntensity,
             RecoverySuggestion recoverySuggestion) {
+        if (athleteId == null) throw new IllegalArgumentException("Athlete ID must not be null");
+        if (name == null || name.isBlank()) throw new IllegalArgumentException("Routine name must not be blank");
+        if (description == null || description.isBlank()) throw new IllegalArgumentException("Description must not be blank");
+        if (recommendedDurationMinutes < 0) throw new IllegalArgumentException("Duration must not be negative");
+        if (recommendedIntensity == null) throw new IllegalArgumentException("Intensity must not be null");
+        if (recoverySuggestion == null) throw new IllegalArgumentException("Recovery suggestion must not be null");
+        validateSuggestionConsistency(recoverySuggestion, recommendedIntensity);
         return new Routine(UUID.randomUUID(), athleteId, name, description, recommendedDurationMinutes,
                 recommendedIntensity, recoverySuggestion, LocalDateTime.now());
+    }
+
+    private static void validateSuggestionConsistency(RecoverySuggestion suggestion, Intensity intensity) {
+        Intensity expected = suggestion.getRecommendedIntensity();
+        if (expected != intensity) {
+            throw new IllegalArgumentException(
+                    "Intensity " + intensity + " is inconsistent with suggestion " + suggestion
+                            + ". Expected: " + expected);
+        }
     }
 }

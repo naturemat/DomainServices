@@ -1,8 +1,8 @@
 package com.sportsclub.infrastructure.adapter.in.rest;
 
-import com.sportsclub.shared.domain.exception.AthleteNotFoundException;
-import com.sportsclub.shared.domain.exception.DomainException;
-import com.sportsclub.shared.domain.exception.InvalidSearchParameterException;
+import com.sportsclub.training.domain.exception.AthleteNotFoundException;
+import com.sportsclub.training.domain.exception.DomainException;
+import com.sportsclub.training.domain.exception.InvalidSearchParameterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

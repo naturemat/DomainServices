@@ -5,7 +5,7 @@ import com.sportsclub.training.application.dto.response.RegisterSessionResponse;
 import com.sportsclub.training.domain.model.entity.Athlete;
 import com.sportsclub.training.domain.model.entity.Routine;
 import com.sportsclub.training.domain.model.entity.TrainingSession;
-import com.sportsclub.training.domain.model.enums.RecoverySuggestion;
+import com.sportsclub.training.domain.model.valueobject.RecoverySuggestion;
 import com.sportsclub.training.domain.model.valueobject.Intensity;
 import com.sportsclub.training.domain.policy.FatigueConfiguration;
 import com.sportsclub.training.domain.port.out.AthleteRepository;
@@ -14,9 +14,8 @@ import com.sportsclub.training.domain.port.out.TrainingSessionRepository;
 import com.sportsclub.training.domain.service.FatigueCalculator;
 import com.sportsclub.training.domain.service.RecoverySuggester;
 import com.sportsclub.training.domain.service.RoutineRecommender;
-import com.sportsclub.performance.domain.port.out.FatigueMetricsRepository;
-import com.sportsclub.shared.domain.model.FatigueLevel;
-import com.sportsclub.shared.domain.exception.AthleteNotFoundException;
+import com.sportsclub.training.domain.model.valueobject.FatigueLevel;
+import com.sportsclub.training.domain.exception.AthleteNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -28,7 +27,6 @@ public class RegisterTrainingSessionUseCase {
     private final AthleteRepository athleteRepository;
     private final TrainingSessionRepository trainingSessionRepository;
     private final RoutineRepository routineRepository;
-    private final FatigueMetricsRepository fatigueMetricsRepository;
     private final FatigueCalculator fatigueCalculator;
     private final RoutineRecommender routineRecommender;
     private final RecoverySuggester recoverySuggester;
@@ -36,13 +34,11 @@ public class RegisterTrainingSessionUseCase {
 
     public RegisterTrainingSessionUseCase(AthleteRepository athleteRepository,
             TrainingSessionRepository trainingSessionRepository, RoutineRepository routineRepository,
-            FatigueMetricsRepository fatigueMetricsRepository, FatigueCalculator fatigueCalculator,
-            RoutineRecommender routineRecommender, RecoverySuggester recoverySuggester,
-            FatigueConfiguration fatigueRules) {
+            FatigueCalculator fatigueCalculator, RoutineRecommender routineRecommender,
+            RecoverySuggester recoverySuggester, FatigueConfiguration fatigueRules) {
         this.athleteRepository = athleteRepository;
         this.trainingSessionRepository = trainingSessionRepository;
         this.routineRepository = routineRepository;
-        this.fatigueMetricsRepository = fatigueMetricsRepository;
         this.fatigueCalculator = fatigueCalculator;
         this.routineRecommender = routineRecommender;
         this.recoverySuggester = recoverySuggester;
@@ -68,11 +64,10 @@ public class RegisterTrainingSessionUseCase {
                 sessionDate.minusHours(fatigueRules.getRecoveryWindowHours()));
         FatigueLevel fatigueLevel = fatigueCalculator.calculateFatigue(recentSessions, sessionDate);
         Routine recommendedRoutine = routineRecommender.recommendRoutine(athleteId, athlete.getSportType());
-        RecoverySuggestion recoverySuggestion = recoverySuggester.getSuggestion(fatigueLevel, athlete.getSportType());
+        RecoverySuggestion recoverySuggestion = recoverySuggester.suggest(fatigueLevel, athlete.getSportType(), recentSessions, sessionDate);
 
         trainingSessionRepository.save(session);
         routineRepository.save(recommendedRoutine);
-        fatigueMetricsRepository.save(athleteId, fatigueLevel, LocalDateTime.now());
 
         return new RegisterSessionResponse(session.getSessionId(), athlete.getId(), session.getSessionDate(),
                 session.getDurationMinutes(), session.getIntensity(), fatigueLevel, recommendedRoutine,

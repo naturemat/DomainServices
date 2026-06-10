@@ -1,23 +1,32 @@
 package com.sportsclub.training.domain.policy;
 
-import com.sportsclub.shared.domain.model.FatigueLevel;
+import com.sportsclub.training.domain.model.valueobject.FatigueLevel;
 
 public class FatigueConfiguration {
     private final int recoveryWindowHours;
     private final int highFatigueThreshold;
     private final int mediumFatigueThreshold;
     private final int restDayReductionRate;
+    private final int highVolumeThreshold;
+    private final int youthMaxDuration;
 
     public FatigueConfiguration() {
-        this(72, 30, 15, 1);
+        this(72, 30, 15, 1, 300, 40);
     }
 
     public FatigueConfiguration(int recoveryWindowHours, int highFatigueThreshold, int mediumFatigueThreshold,
             int restDayReductionRate) {
+        this(recoveryWindowHours, highFatigueThreshold, mediumFatigueThreshold, restDayReductionRate, 300, 40);
+    }
+
+    public FatigueConfiguration(int recoveryWindowHours, int highFatigueThreshold, int mediumFatigueThreshold,
+            int restDayReductionRate, int highVolumeThreshold, int youthMaxDuration) {
         this.recoveryWindowHours = recoveryWindowHours;
         this.highFatigueThreshold = highFatigueThreshold;
         this.mediumFatigueThreshold = mediumFatigueThreshold;
         this.restDayReductionRate = restDayReductionRate;
+        this.highVolumeThreshold = highVolumeThreshold;
+        this.youthMaxDuration = youthMaxDuration;
     }
 
     public int getRecoveryWindowHours() {
@@ -34,6 +43,29 @@ public class FatigueConfiguration {
 
     public int getRestDayReductionRate() {
         return restDayReductionRate;
+    }
+
+    public int getHighVolumeThreshold() {
+        return highVolumeThreshold;
+    }
+
+    public int getYouthMaxDuration() {
+        return youthMaxDuration;
+    }
+
+    public int adjustDurationForVolume(int baseDuration, int weeklyMinutes) {
+        return weeklyMinutes > highVolumeThreshold ? (int) (baseDuration * 0.8) : baseDuration;
+    }
+
+    public int adjustDurationForAge(int duration, int age) {
+        return age < 18 ? Math.min(duration, youthMaxDuration) : duration;
+    }
+
+    public FatigueLevel applyRestReduction(FatigueLevel currentFatigue, int restDays) {
+        int reduced = currentFatigue.getValue() - (restDays * restDayReductionRate);
+        if (reduced <= FatigueLevel.LOW.getValue()) return FatigueLevel.LOW;
+        if (reduced <= FatigueLevel.MEDIUM.getValue()) return FatigueLevel.MEDIUM;
+        return FatigueLevel.HIGH;
     }
 
     public boolean isHighFatigue(int fatiguePoints) {

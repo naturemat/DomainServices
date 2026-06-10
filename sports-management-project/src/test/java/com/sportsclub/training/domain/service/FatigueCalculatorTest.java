@@ -3,8 +3,8 @@ package com.sportsclub.training.domain.service;
 import com.sportsclub.training.domain.model.entity.TrainingSession;
 import com.sportsclub.training.domain.model.valueobject.Intensity;
 import com.sportsclub.training.domain.model.valueobject.SessionId;
-import com.sportsclub.training.domain.policy.FatigueRules;
-import com.sportsclub.shared.domain.model.FatigueLevel;
+import com.sportsclub.training.domain.policy.FatigueConfiguration;
+import com.sportsclub.training.domain.model.valueobject.FatigueLevel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
@@ -14,10 +14,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class FatigueCalculatorTest {
     private FatigueCalculator fatigueCalculator;
-    private FatigueRules fatigueRules;
+    private FatigueConfiguration fatigueConfiguration;
 
     @BeforeEach
-    void setUp() { fatigueRules = new FatigueRules(72, 30, 15, 1); fatigueCalculator = new FatigueCalculator(fatigueRules); }
+    void setUp() { fatigueConfiguration = new FatigueConfiguration(72, 30, 15, 1); fatigueCalculator = new FatigueCalculator(fatigueConfiguration); }
 
     @Test
     void testCalculateFatigue_WithNoSessions_ReturnsLow() { assertEquals(FatigueLevel.LOW, fatigueCalculator.calculateFatigue(List.of(), LocalDateTime.now())); }

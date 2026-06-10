@@ -1,8 +1,8 @@
 package com.sportsclub.training.application.dto.response;
 
 import com.sportsclub.training.domain.model.entity.Routine;
-import com.sportsclub.training.domain.model.enums.RecoverySuggestion;
-import com.sportsclub.shared.domain.model.FatigueLevel;
+import com.sportsclub.training.domain.model.valueobject.RecoverySuggestion;
+import com.sportsclub.training.domain.model.valueobject.FatigueLevel;
 import com.sportsclub.training.domain.model.valueobject.Intensity;
 import com.sportsclub.training.domain.model.valueobject.SessionId;
 import java.time.LocalDateTime;

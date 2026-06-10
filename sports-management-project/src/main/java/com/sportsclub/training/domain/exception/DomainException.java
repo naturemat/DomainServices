@@ -1,4 +1,4 @@
-package com.sportsclub.shared.domain.exception;
+package com.sportsclub.training.domain.exception;
 
 public abstract class DomainException extends RuntimeException {
     public DomainException(String message) {

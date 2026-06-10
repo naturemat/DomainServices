@@ -7,11 +7,13 @@ import com.sportsclub.infrastructure.adapter.out.persistence.postgres.mapper.Dom
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Primary
 @Repository
 public class PostgresAthleteRepository implements AthleteRepository {
     @PersistenceContext

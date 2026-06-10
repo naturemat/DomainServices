@@ -6,50 +6,51 @@ Academic project implementing Hexagonal Architecture (Ports & Adapters) with Dom
 
 **The System Solves**: Fatigue management for athletes
 
-### Bounded Contexts
+### Bounded Context
 
 | Context | Package | Purpose |
 |---------|---------|---------|
-| **Training** | `com.sportsclub.training.domain` | Operational domain (athletes, sessions, routines) |
-| **Performance** | `com.sportsclub.performance.domain` | Analytical domain (fatigue metrics) |
+| **Training** | `com.sportsclub.training.domain` | Operational domain (athletes, sessions, routines, fatigue, recovery) |
 
 ### Entities
 
-| Entity | Context | Type | Identity | Description |
-|--------|---------|------|----------|-------------|
-| **Athlete** | Training | Aggregate Root | `UUID id` | Person who trains (GYM or FOOTBALL) |
-| **TrainingSession** | Training | Aggregate Root | `SessionId sessionId` | Individual training event with calculated fatigue |
-| **Routine** | Training | Aggregate Root | `UUID id` | Recommended training plan |
-| **SportProfile** | Training | Entity | `UUID id` | Athlete's sport-specific profile |
-| **FatigueMetrics** | Performance | Aggregate Root | `UUID id` | Historical fatigue record (MongoDB) |
+| Entity | Type | Identity | Description |
+|--------|------|----------|-------------|
+| **Athlete** | Aggregate Root | `UUID id` | Person who trains (GYM or FOOTBALL) with name, birthDate, sportType |
+| **TrainingSession** | Aggregate Root | `SessionId sessionId` | Individual training event with calculated fatigue contribution |
+| **Routine** | Aggregate Root | `UUID id` | Recommended training plan with intensity, duration, and recovery suggestion |
 
-### Value Objects & Enums
+### Value Objects
 
-| Value Object/Enum | Context | Values |
-|--------------------|---------|--------|
-| **SessionId** | Training | UUID wrapper (Java record) |
-| **Intensity** | Training | LIGHT(1x), MODERATE(2x), HIGH(3x), EXTREME(4x) |
-| **SportType** | Training | GYM, FOOTBALL |
-| **FatigueLevel** | Shared | LOW(1), MEDIUM(2), HIGH(3) |
-| **RecoverySuggestion** | Training | ABSOLUTE_REST, LIGHT_ACTIVITY, ACTIVE_RECOVERY, MODERATE_WORKOUT, INCREASE_INTENSITY |
+| Value Object | Values / Behavior |
+|--------------|-------------------|
+| **SessionId** | UUID wrapper (Java record) |
+| **Intensity** | LIGHT(1x), MODERATE(2x), HIGH(3x), EXTREME(4x). Has `getFatigueMultiplier()` and `calculateCalories()` |
+| **SportType** | GYM, FOOTBALL. Has `getDisplayName()` |
+| **FatigueLevel** | LOW(1), MEDIUM(2), HIGH(3). Has `isHigherThan()`, `isLowerThan()`, `getRecoverySuggestion(SportType)` |
+| **RecoverySuggestion** | ABSOLUTE_REST, LIGHT_ACTIVITY, ACTIVE_RECOVERY, MODERATE_WORKOUT, INCREASE_INTENSITY. Has `getRecommendedIntensity()`, `getBaseDurationMinutes()`, `buildRoutineName()`, `buildDescription()` |
 
 ### Domain Services
 
-| Service | Context | File Location | Description |
-|---------|---------|---------------|-------------|
-| **FatigueCalculator** | Training | `training/domain/service/` | Calculates fatigue: `(duration/10) × intensityMultiplier` |
-| **RoutineRecommender** | Training | `training/domain/service/` | Recommends routine based on fatigue + sport type |
-| **RecoverySuggester** | Training | `training/domain/service/` | Suggests recovery action |
+| Service | Responsibility | Collaborators |
+|---------|----------------|---------------|
+| **FatigueCalculator** | Calculates fatigue level from recent sessions within recovery window | FatigueConfiguration (Policy), TrainingSession (VO behavior `getFatigueContribution()`) |
+| **RoutineRecommender** | Recommends routine by orchestrating fatigue calculation, recovery suggestion, athlete context, and training load metrics | AthleteRepository, FatigueCalculator, RecoverySuggester, TrainingSessionRepository, FatigueConfiguration |
+| **RecoverySuggester** | Suggests recovery action based on fatigue, sport type, consecutive low days, and absolute rest policy | FatigueConfiguration (Policy), FatigueLevel (VO `getRecoverySuggestion()`) |
 
 ### Policies
 
-| Policy | Context | Description |
-|--------|---------|-------------|
-| **FatigueRules** | Training | Thresholds (HIGH=30, MEDIUM=15) and 72h recovery window |
+| Policy | Configuration | Rules |
+|--------|---------------|-------|
+| **FatigueConfiguration** | recoveryWindowHours(72), highThreshold(30), mediumThreshold(15), restDayReduction(1), volumeThreshold(300min/week), youthMaxDuration(40min) | `classifyFatigue()`, `needsAbsoluteRest()`, `adjustDurationForVolume()`, `adjustDurationForAge()`, `applyRestReduction()` |
 
 ### Business Rules
 - Sessions within **72-hour window** count toward fatigue
 - Fatigue thresholds: LOW(0-14), MEDIUM(15-29), HIGH(30+)
+- Fatigue points: `(durationMinutes / 10) × intensityMultiplier`
+- Absolute rest needed when `fatiguePoints >= 30 AND sessionsThisWeek >= 5`
+- Youth athletes (< 18) have max routine duration of 40 minutes
+- High weekly volume (> 300 min) reduces routine duration by 20%
 
 ---
 
@@ -72,7 +73,7 @@ For detailed documentation, see the `/docs` folder:
 
 | Document | Description |
 |----------|-------------|
-| [bounded-contexts.md](docs/bounded-contexts.md) | Training & Performance bounded contexts |
+| [bounded-contexts.md](docs/bounded-contexts.md) | Training bounded context, entities, services, and data flow |
 | [architecture-diagram.md](docs/architecture-diagram.md) | Hexagonal layers, data flow, deep dive |
 | [ubiquitous-language.md](docs/ubiquitous-language.md) | Domain vocabulary with code examples |
 
@@ -81,27 +82,23 @@ For detailed documentation, see the `/docs` folder:
 ```
 ┌─────────────────────────────────────────┐
 │         INFRASTRUCTURE (Adapters)       │
-│   REST Controllers │ PostgreSQL │ MongoDB │
+│    REST Controllers │ PostgreSQL │ MongoDB │
 └─────────────────┬───────────────────────┘
                   ▼
 ┌─────────────────────────────────────────┐
 │         PORTS (Interfaces)              │
 │  AthleteRepo │ SessionRepo │ RoutineRepo│
-│  FatigueMetricsRepo                     │
 └─────────────────┬───────────────────────┘
                   ▼
 ┌─────────────────────────────────────────┐
 │         DOMAIN (Core - Pure Logic)      │
-│   Training Context: Athlete, TrainingSession, │
-│   Routine, SportProfile, Services, Policies │
-│   Performance Context: FatigueMetrics     │
+│   Athlete, TrainingSession, Routine,     │
+│   Services, Policies, Value Objects      │
 │   (ZERO Spring annotations)             │
 └─────────────────────────────────────────┘
 ```
 
-- **Training Context**: Athletes, sessions, routines, FatigueCalculator, RoutineRecommender, RecoverySuggester
-- **Performance Context**: FatigueMetrics, FatigueMetricsRepository
-- **Shared**: FatigueLevel enum
+- **Training Context**: Athletes, sessions, routines, domain services (FatigueCalculator, RoutineRecommender, RecoverySuggester), policies (FatigueConfiguration)
 
 ## API Endpoints
 

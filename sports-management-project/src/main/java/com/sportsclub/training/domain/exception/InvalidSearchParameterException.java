@@ -1,4 +1,4 @@
-package com.sportsclub.shared.domain.exception;
+package com.sportsclub.training.domain.exception;
 
 public class InvalidSearchParameterException extends DomainException {
     public InvalidSearchParameterException(String message) {

@@ -4,6 +4,8 @@ import com.sportsclub.training.domain.policy.FatigueConfiguration;
 import com.sportsclub.training.domain.service.FatigueCalculator;
 import com.sportsclub.training.domain.service.RecoverySuggester;
 import com.sportsclub.training.domain.service.RoutineRecommender;
+import com.sportsclub.training.domain.port.out.AthleteRepository;
+import com.sportsclub.training.domain.port.out.TrainingSessionRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,6 +13,6 @@ import org.springframework.context.annotation.Configuration;
 public class DomainServiceConfig {
     @Bean public FatigueConfiguration fatigueRules() { return new FatigueConfiguration(); }
     @Bean public FatigueCalculator fatigueCalculator(FatigueConfiguration fatigueRules) { return new FatigueCalculator(fatigueRules); }
-    @Bean public RoutineRecommender routineRecommender(com.sportsclub.training.domain.port.out.AthleteProfileRepository profileRepository, FatigueCalculator fatigueCalculator, com.sportsclub.training.domain.port.out.TrainingSessionRepository sessionRepository) { return new RoutineRecommender(profileRepository, fatigueCalculator, sessionRepository); }
-    @Bean public RecoverySuggester recoverySuggester() { return new RecoverySuggester(); }
+    @Bean public RoutineRecommender routineRecommender(AthleteRepository athleteRepository, FatigueCalculator fatigueCalculator, RecoverySuggester recoverySuggester, TrainingSessionRepository sessionRepository, FatigueConfiguration fatigueRules) { return new RoutineRecommender(athleteRepository, fatigueCalculator, recoverySuggester, sessionRepository, fatigueRules); }
+    @Bean public RecoverySuggester recoverySuggester(FatigueConfiguration fatigueRules) { return new RecoverySuggester(fatigueRules); }
 }

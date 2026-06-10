@@ -2,7 +2,7 @@ package com.sportsclub.training.application.usecase;
 
 import com.sportsclub.training.domain.model.entity.Athlete;
 import com.sportsclub.training.domain.port.out.AthleteRepository;
-import com.sportsclub.shared.domain.exception.InvalidSearchParameterException;
+import com.sportsclub.training.domain.exception.InvalidSearchParameterException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;

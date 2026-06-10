@@ -1,77 +1,62 @@
 package com.sportsclub.training.domain.service;
 
+import com.sportsclub.training.domain.model.entity.Athlete;
 import com.sportsclub.training.domain.model.entity.Routine;
-import com.sportsclub.training.domain.model.enums.RecoverySuggestion;
-import com.sportsclub.training.domain.model.valueobject.Intensity;
+import com.sportsclub.training.domain.model.entity.TrainingSession;
+import com.sportsclub.training.domain.model.valueobject.FatigueLevel;
+import com.sportsclub.training.domain.model.valueobject.RecoverySuggestion;
 import com.sportsclub.training.domain.model.valueobject.SportType;
-import com.sportsclub.training.domain.port.out.AthleteProfileRepository;
+import com.sportsclub.training.domain.policy.FatigueConfiguration;
+import com.sportsclub.training.domain.port.out.AthleteRepository;
 import com.sportsclub.training.domain.port.out.TrainingSessionRepository;
-import com.sportsclub.shared.domain.model.FatigueLevel;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import com.sportsclub.training.domain.model.entity.AthleteProfile;
-import com.sportsclub.training.domain.model.entity.TrainingSession;
 
 public class RoutineRecommender {
-    private final AthleteProfileRepository profileRepository;
+    private final AthleteRepository athleteRepository;
     private final FatigueCalculator fatigueCalculator;
+    private final RecoverySuggester recoverySuggester;
     private final TrainingSessionRepository sessionRepository;
+    private final FatigueConfiguration fatigueRules;
 
-    public RoutineRecommender(AthleteProfileRepository profileRepository, FatigueCalculator fatigueCalculator,
-            TrainingSessionRepository sessionRepository) {
-        this.profileRepository = profileRepository;
+    public RoutineRecommender(AthleteRepository athleteRepository, FatigueCalculator fatigueCalculator,
+            RecoverySuggester recoverySuggester, TrainingSessionRepository sessionRepository,
+            FatigueConfiguration fatigueRules) {
+        this.athleteRepository = athleteRepository;
         this.fatigueCalculator = fatigueCalculator;
+        this.recoverySuggester = recoverySuggester;
         this.sessionRepository = sessionRepository;
+        this.fatigueRules = fatigueRules;
     }
 
     public Routine recommendRoutine(UUID athleteId, SportType sportType) {
-        AthleteProfile profile = profileRepository.findByAthleteId(athleteId);
+        Athlete athlete = athleteRepository.findById(athleteId).orElse(null);
+        LocalDateTime now = LocalDateTime.now();
         List<TrainingSession> recentSessions = sessionRepository.findRecentByAthleteId(athleteId,
-                LocalDateTime.now().minusHours(72));
-        FatigueLevel fatigue = fatigueCalculator.calculateFatigue(recentSessions, LocalDateTime.now());
-        int age = profile.getAthlete().calculateAge();
-        boolean isCompetitionSoon = profile.hasCompetitionInNextDays(3);
-        int weeklyLoad = profile.getTotalMinutesThisWeek();
+                now.minusHours(fatigueRules.getRecoveryWindowHours()));
+        FatigueLevel fatigue = fatigueCalculator.calculateFatigue(recentSessions, now);
+        RecoverySuggestion suggestion = recoverySuggester.suggest(fatigue, sportType, recentSessions, now);
 
-        if (isCompetitionSoon && fatigue == FatigueLevel.LOW)
-            return createTaperingRoutine(athleteId, sportType);
-        if (weeklyLoad > 300 && fatigue == FatigueLevel.MEDIUM)
-            return createDeloadRoutine(athleteId, sportType);
-        if (age < 18 && fatigue == FatigueLevel.HIGH)
-            return createYouthRecoveryRoutine(athleteId, sportType);
-        return getStandardRecommendation(fatigue, athleteId, sportType);
+        int age = athlete != null ? athlete.calculateAge() : 25;
+        int weeklyMinutes = sumDurationLastWeek(recentSessions, now);
+
+        int duration = fatigueRules.adjustDurationForAge(
+                fatigueRules.adjustDurationForVolume(suggestion.getBaseDurationMinutes(), weeklyMinutes), age);
+        int displayDuration = duration > 0 ? duration : 20;
+
+        return Routine.create(athleteId,
+                suggestion.buildRoutineName(sportType),
+                suggestion.buildDescription(fatigue),
+                displayDuration,
+                suggestion.getRecommendedIntensity(),
+                suggestion);
     }
 
-    private Routine createTaperingRoutine(UUID athleteId, SportType sportType) {
-        return Routine.create(athleteId, "Descarga - " + sportType.getDisplayName(),
-                "Reducción de carga previa a competencia", 30, Intensity.LIGHT, RecoverySuggestion.ACTIVE_RECOVERY);
-    }
-
-    private Routine createDeloadRoutine(UUID athleteId, SportType sportType) {
-        return Routine.create(athleteId, "Semana de Descarga - " + sportType.getDisplayName(),
-                "Reducción de volumen semanal", 40, Intensity.MODERATE, RecoverySuggestion.MODERATE_WORKOUT);
-    }
-
-    private Routine createYouthRecoveryRoutine(UUID athleteId, SportType sportType) {
-        return Routine.create(athleteId, "Recuperación Jóvenes - " + sportType.getDisplayName(),
-                "Enfoque en técnica y recuperación", 25, Intensity.LIGHT, RecoverySuggestion.LIGHT_ACTIVITY);
-    }
-
-    private Routine getStandardRecommendation(FatigueLevel fatigue, UUID athleteId, SportType sportType) {
-        switch (fatigue) {
-            case HIGH:
-                return Routine.create(athleteId, "Recuperación - " + sportType.getDisplayName(), "Entrenamiento ligero",
-                        30, Intensity.LIGHT, RecoverySuggestion.LIGHT_ACTIVITY);
-            case MEDIUM:
-                return Routine.create(athleteId, "Mantenimiento - " + sportType.getDisplayName(),
-                        "Entrenamiento moderado", 45, Intensity.MODERATE, RecoverySuggestion.MODERATE_WORKOUT);
-            case LOW:
-                return Routine.create(athleteId, "Intenso - " + sportType.getDisplayName(), "Alta intensidad", 60,
-                        Intensity.HIGH, RecoverySuggestion.INCREASE_INTENSITY);
-            default:
-                return Routine.create(athleteId, "Normal - " + sportType.getDisplayName(), "Entrenamiento estándar", 50,
-                        Intensity.MODERATE, RecoverySuggestion.MODERATE_WORKOUT);
-        }
+    private int sumDurationLastWeek(List<TrainingSession> sessions, LocalDateTime now) {
+        return sessions.stream()
+                .filter(s -> java.time.Duration.between(s.getSessionDate(), now).toHours() <= 168)
+                .mapToInt(TrainingSession::getDurationMinutes)
+                .sum();
     }
 }

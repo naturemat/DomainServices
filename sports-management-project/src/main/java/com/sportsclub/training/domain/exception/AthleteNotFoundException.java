@@ -1,4 +1,4 @@
-package com.sportsclub.shared.domain.exception;
+package com.sportsclub.training.domain.exception;
 
 public class AthleteNotFoundException extends DomainException {
     public AthleteNotFoundException(String message) {
