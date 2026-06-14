@@ -68,22 +68,10 @@ public class FatigueConfiguration {
         return FatigueLevel.HIGH;
     }
 
-    public boolean isHighFatigue(int fatiguePoints) {
-        return fatiguePoints >= highFatigueThreshold;
-    }
-
-    public boolean isMediumFatigue(int fatiguePoints) {
-        return fatiguePoints >= mediumFatigueThreshold && !isHighFatigue(fatiguePoints);
-    }
-
-    public boolean isLowFatigue(int fatiguePoints) {
-        return fatiguePoints < mediumFatigueThreshold;
-    }
-
     public FatigueLevel classifyFatigue(int fatiguePoints) {
-        if (isHighFatigue(fatiguePoints))
+        if (fatiguePoints >= highFatigueThreshold)
             return FatigueLevel.HIGH;
-        if (isMediumFatigue(fatiguePoints))
+        if (fatiguePoints >= mediumFatigueThreshold)
             return FatigueLevel.MEDIUM;
         return FatigueLevel.LOW;
     }
@@ -93,6 +81,6 @@ public class FatigueConfiguration {
     }
 
     public boolean needsAbsoluteRest(int fatiguePoints, int sessionsThisWeek) {
-        return isHighFatigue(fatiguePoints) && sessionsThisWeek >= 5;
+        return fatiguePoints >= highFatigueThreshold && sessionsThisWeek >= 5;
     }
 }
